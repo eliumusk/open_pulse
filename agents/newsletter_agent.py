@@ -2,6 +2,7 @@
 Newsletter Agent - The main conversational agent for Open Pulse
 This agent interacts with users to understand their interests and preferences
 """
+import os
 from textwrap import dedent
 from agno.agent import Agent
 from agno.db.sqlite import SqliteDb
@@ -9,7 +10,7 @@ from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
 
-
+OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
 def create_newsletter_agent(db: SqliteDb = None) -> Agent:
     """
     Create the Newsletter Agent for conversational interactions.
@@ -29,13 +30,13 @@ def create_newsletter_agent(db: SqliteDb = None) -> Agent:
     if db is None:
         db = SqliteDb(
             db_file=DATABASE_FILE,
-            session_table="newsletter_sessions",
-            memory_table="user_memories",
+            session_table="newsletter_sessions", 
+            memory_table="agno_memories",   
         )
     
     agent = Agent(
         name="Newsletter Agent",
-        model=OpenRouter(id="anthropic/claude-3.5-sonnet"),
+        model=OpenRouter(id=OPENROUTER_MODEL_ID),
         description="A friendly AI assistant that helps users discover and learn about topics they're interested in.",
         instructions=dedent("""
             You are the Newsletter Agent for Open Pulse, a personalized newsletter service.

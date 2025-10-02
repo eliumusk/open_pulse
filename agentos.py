@@ -8,6 +8,7 @@ from agno.os import AgentOS
 from agno.tools.mcp import MultiMCPTools
 
 from agents import create_newsletter_agent, create_digest_agent, create_research_agent
+from workflows import create_newsletter_workflow
 from config.settings import (
     DATABASE_FILE,
     AGENTOS_PORT,
@@ -23,8 +24,8 @@ validate_settings()
 # Create shared database instance
 db = SqliteDb(
     db_file=DATABASE_FILE,
-    session_table="sessions",
-    memory_table="user_memories",
+    session_table="agno_sessions",  # Use Agno's default
+    memory_table="agno_memories",   # Use Agno's default
 )
 
 # Global MCP tools instance
@@ -59,14 +60,19 @@ print("🚀 Creating agents...")
 newsletter_agent = create_newsletter_agent(db=db)
 digest_agent = create_digest_agent(db=db)
 research_agent = create_research_agent(db=db)
-
 print("✅ Agents created successfully")
+
+# Create workflow
+print("🔄 Creating workflow...")
+newsletter_workflow = create_newsletter_workflow(db=db)
+print("✅ Workflow created successfully")
 
 # Create AgentOS
 agent_os = AgentOS(
     id="open-pulse-os",
     description="Open Pulse - Your personalized AI newsletter service",
     agents=[newsletter_agent, digest_agent, research_agent],
+    workflows=[newsletter_workflow],  # Add workflow here!
     # Enable MCP server so other agents can interact with this AgentOS
     enable_mcp_server=True,
 )
@@ -117,6 +123,9 @@ Available Agents:
   • Newsletter Agent - Chat about your interests
   • Digest Agent - Generate personalized newsletters
   • Research Agent - Find relevant information
+
+Available Workflows:
+  • Newsletter Generation Workflow - Automated newsletter generation
 
 Press Ctrl+C to stop the server
 """)

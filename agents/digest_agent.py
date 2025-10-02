@@ -8,8 +8,10 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
-
-
+# from dotenv import load_dotenv
+# OpenRouterModelId = load_dotenv().get("OPENROUTER_MODEL_ID")
+import os
+OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
 def create_digest_agent(db: SqliteDb = None) -> Agent:
     """
     Create the Digest Agent for background newsletter generation.
@@ -29,13 +31,13 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
     if db is None:
         db = SqliteDb(
             db_file=DATABASE_FILE,
-            session_table="digest_sessions",
-            memory_table="user_memories",  # Share memory table with Newsletter Agent
+            session_table="digest_sessions", 
+            memory_table="agno_memories",   
         )
     
     agent = Agent(
         name="Digest Agent",
-        model=OpenRouter(id="anthropic/claude-3.5-sonnet"),  # Use powerful model for content generation
+        model=OpenRouter(id=OPENROUTER_MODEL_ID),  # Use powerful model for content generation
         description="An AI agent that analyzes user interests and generates personalized newsletter content.",
         instructions=dedent("""
             You are the Digest Agent for Open Pulse, responsible for generating personalized newsletters.
@@ -72,7 +74,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
         db=db,
         
         # Don't need to create new memories, just read existing ones
-        enable_user_memories=False,
+        enable_user_memories=True,
         
         # Add current date/time to context
         add_datetime_to_context=True,
@@ -107,12 +109,13 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
     if db is None:
         db = SqliteDb(
             db_file=DATABASE_FILE,
-            session_table="research_sessions",
+            session_table="research_sessions", 
+            memory_table="agno_memories",   
         )
     
     agent = Agent(
         name="Research Agent",
-        model=OpenRouter(id="anthropic/claude-3.5-sonnet"),
+        model=OpenRouter(id=OPENROUTER_MODEL_ID),
         description="An AI agent specialized in finding and extracting relevant information.",
         instructions=dedent("""
             You are a Research Agent specialized in finding high-quality information.
@@ -140,6 +143,7 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
         """),
         db=db,
         add_datetime_to_context=True,
+        enable_user_memories=True,
         tools=[
             ArxivTools(enable_search_arxiv=True, enable_read_arxiv_papers=False)
         ],
