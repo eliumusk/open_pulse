@@ -28,11 +28,8 @@ def create_newsletter_agent(db: SqliteDb = None) -> Agent:
         Agent: Configured Newsletter Agent
     """
     if db is None:
-        db = SqliteDb(
-            db_file=DATABASE_FILE,
-            session_table="newsletter_sessions", 
-            memory_table="agno_memories",   
-        )
+        # Use Agno's default table names
+        db = SqliteDb(db_file=DATABASE_FILE)
     
     agent = Agent(
         name="Newsletter Agent",

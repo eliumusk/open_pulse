@@ -136,10 +136,8 @@ def create_newsletter_workflow(db: SqliteDb = None) -> Workflow:
         Workflow: Configured newsletter generation workflow
     """
     if db is None:
-        db = SqliteDb(
-            db_file=DATABASE_FILE,
-            session_table="workflow_sessions",
-        )
+        # Use Agno's default table names
+        db = SqliteDb(db_file=DATABASE_FILE)
     
     # Create agents
     digest_agent = create_digest_agent(db=db)

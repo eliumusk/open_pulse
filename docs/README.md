@@ -112,7 +112,7 @@ open_pulse/
 ├── tools/                  # MCP 工具配置
 │   ├── mcp_tools.py
 │   └── __init__.py
-├── workflows/              # 后台工作流（即将上线）
+├── workflows/              # 后台工作流
 ├── config/                 # 配置文件
 │   ├── settings.py
 │   └── __init__.py

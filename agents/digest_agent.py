@@ -29,11 +29,8 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
         Agent: Configured Digest Agent
     """
     if db is None:
-        db = SqliteDb(
-            db_file=DATABASE_FILE,
-            session_table="digest_sessions", 
-            memory_table="agno_memories",   
-        )
+        # Use Agno's default table names
+        db = SqliteDb(db_file=DATABASE_FILE)
     
     agent = Agent(
         name="Digest Agent",
@@ -107,11 +104,8 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
         Agent: Configured Research Agent
     """
     if db is None:
-        db = SqliteDb(
-            db_file=DATABASE_FILE,
-            session_table="research_sessions", 
-            memory_table="agno_memories",   
-        )
+        # Use Agno's default table names
+        db = SqliteDb(db_file=DATABASE_FILE)
     
     agent = Agent(
         name="Research Agent",

@@ -8,7 +8,7 @@ from agno.os import AgentOS
 from agno.tools.mcp import MultiMCPTools
 
 from agents import create_newsletter_agent, create_digest_agent, create_research_agent
-from workflows import create_newsletter_workflow
+from workflows import create_newsletter_workflow, create_simple_newsletter_workflow
 from config.settings import (
     DATABASE_FILE,
     AGENTOS_PORT,
@@ -22,10 +22,11 @@ from tools import get_mcp_tools
 validate_settings()
 
 # Create shared database instance
+# ✅ Use Agno's default table names for consistency
 db = SqliteDb(
     db_file=DATABASE_FILE,
-    session_table="agno_sessions",  # Use Agno's default
-    memory_table="agno_memories",   # Use Agno's default
+    # Don't specify session_table - use default 'sessions'
+    # Don't specify memory_table - use default 'memories'
 )
 
 # Global MCP tools instance
@@ -62,17 +63,18 @@ digest_agent = create_digest_agent(db=db)
 research_agent = create_research_agent(db=db)
 print("✅ Agents created successfully")
 
-# Create workflow
-print("🔄 Creating workflow...")
+# Create workflows
+print("🔄 Creating workflows...")
 newsletter_workflow = create_newsletter_workflow(db=db)
-print("✅ Workflow created successfully")
+simple_workflow = create_simple_newsletter_workflow(db=db)
+print("✅ Workflows created successfully")
 
 # Create AgentOS
 agent_os = AgentOS(
     id="open-pulse-os",
     description="Open Pulse - Your personalized AI newsletter service",
     agents=[newsletter_agent, digest_agent, research_agent],
-    workflows=[newsletter_workflow],  # Add workflow here!
+    workflows=[newsletter_workflow, simple_workflow],  # Add both workflows!
     # Enable MCP server so other agents can interact with this AgentOS
     enable_mcp_server=True,
 )
@@ -125,7 +127,8 @@ Available Agents:
   • Research Agent - Find relevant information
 
 Available Workflows:
-  • Newsletter Generation Workflow - Automated newsletter generation
+  • Newsletter Generation Workflow - Full workflow with LLM and search
+  • Simple Newsletter Workflow - Simplified workflow for testing (no API calls)
 
 Press Ctrl+C to stop the server
 """)
