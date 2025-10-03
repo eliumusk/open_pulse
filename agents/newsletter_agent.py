@@ -9,8 +9,29 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
+from agno.knowledge import Knowledge
+from agno.vectordb.lancedb import LanceDb,SearchType
+from agno.db.sqlite import SqliteDb
+from agno.knowledge.embedder.cohere import CohereEmbedder
 
+import os
 OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
+
+contents_db = SqliteDb(db_file="my_knowledge.db")
+
+vector_db = LanceDb(
+    table_name="agno_docs",
+    uri="tmp/lancedb",  
+    search_type=SearchType.hybrid,
+    embedder=CohereEmbedder(id="embed-v4.0"),
+)
+knowledge = Knowledge(
+    name="My Knowledge Base",
+    vector_db=vector_db,
+    contents_db=contents_db 
+)
+
+
 def create_newsletter_agent(db: SqliteDb = None) -> Agent:
     """
     Create the Newsletter Agent for conversational interactions.
@@ -61,6 +82,7 @@ def create_newsletter_agent(db: SqliteDb = None) -> Agent:
         """),
         # Enable memory to remember user preferences
         db=db,
+        knowledge=knowledge,
         enable_user_memories=True,
         enable_agentic_memory=True,  # Let the agent manage its own memories
         

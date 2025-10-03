@@ -8,10 +8,31 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
-# from dotenv import load_dotenv
-# OpenRouterModelId = load_dotenv().get("OPENROUTER_MODEL_ID")
+from agno.knowledge import Knowledge
+from agno.vectordb.lancedb import LanceDb
+from agno.db.sqlite import SqliteDb
+from agno.vectordb.search import SearchType
+from agno.knowledge.embedder.cohere import CohereEmbedder
 import os
 OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
+
+contents_db = SqliteDb(db_file="my_knowledge.db")
+
+
+vector_db = LanceDb(
+    table_name="agno_docs",
+    uri="tmp/lancedb",  
+    search_type=SearchType.hybrid,
+    embedder=CohereEmbedder(id="embed-v4.0"), 
+)
+
+knowledge = Knowledge(
+    name="My Knowledge Base",
+    vector_db=vector_db,
+    contents_db=contents_db, 
+)
+
+
 def create_digest_agent(db: SqliteDb = None) -> Agent:
     """
     Create the Digest Agent for background newsletter generation.
@@ -69,7 +90,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
         """),
         # Database for storing digest sessions
         db=db,
-        
+        knowledge=knowledge,
         # Don't need to create new memories, just read existing ones
         enable_user_memories=True,
         
@@ -136,6 +157,7 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
             - Recency (date of information)
         """),
         db=db,
+        knowledge=knowledge,
         add_datetime_to_context=True,
         enable_user_memories=True,
         tools=[
