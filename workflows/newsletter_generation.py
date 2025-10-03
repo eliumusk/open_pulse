@@ -6,13 +6,18 @@ import asyncio
 from datetime import datetime
 from typing import Dict, Any, List
 from textwrap import dedent
+from io import BytesIO
 
+from google import genai
+from PIL import Image as PILImage
+
+from agno.media import Image
 from agno.workflow import Workflow, Step, Parallel
 from agno.workflow.types import StepInput, StepOutput
 from agno.db.sqlite import SqliteDb
 
 from agents import create_digest_agent, create_research_agent
-from config.settings import DATABASE_FILE
+from config.settings import DATABASE_FILE, GOOGLE_API_KEY
 
 
 def extract_user_context(step_input: StepInput) -> StepOutput:
@@ -70,18 +75,102 @@ def extract_user_context(step_input: StepInput) -> StepOutput:
     )
 
 
-def save_newsletter(step_input: StepInput) -> StepOutput:
+def generate_cover_image(step_input: StepInput) -> StepOutput:
     """
-    Step 4: Save the generated newsletter to database
+    Step 4: Generate a cover image for the newsletter using Google Gemini
 
-    The newsletter is automatically saved by Agno's workflow storage system.
-    This step just returns the complete newsletter content for display.
+    This function:
+    1. Extracts the newsletter title/topic from the content
+    2. Creates a prompt for image generation
+    3. Calls Google Gemini 2.5 Flash Image model
+    4. Returns the newsletter content with the generated cover image
 
     Args:
         step_input: Contains the generated newsletter content
 
     Returns:
-        StepOutput with the complete newsletter content
+        StepOutput with newsletter content and cover image
+    """
+    newsletter_content = step_input.previous_step_content or step_input.input
+
+    print(f"🎨 Generating cover image for newsletter...")
+
+    try:
+        # Extract title from newsletter (first line after markdown header)
+        lines = newsletter_content.split('\n')
+        title = "Newsletter"
+        for line in lines:
+            if line.strip() and not line.startswith('#') and not line.startswith('*'):
+                title = line.strip()[:100]  # First 100 chars
+                break
+
+        # Create prompt for image generation
+        # Simple prompt based on title - you can adjust this later
+        prompt = f"Create a modern, professional newsletter cover image for: {title}. Style: clean, minimalist, tech-focused, high quality."
+
+        print(f"📝 Image prompt: {prompt[:100]}...")
+
+        # Initialize Google Gemini client
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+
+        # Generate image
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[prompt],
+        )
+
+        # Extract image data
+        cover_image = None
+        for part in response.candidates[0].content.parts:
+            if part.inline_data is not None:
+                # Get image bytes
+                image_bytes = part.inline_data.data
+
+                # Create Agno Image object
+                cover_image = Image(
+                    content=image_bytes,
+                    mime_type="image/png",
+                )
+
+                print(f"✅ Cover image generated: {len(image_bytes)} bytes")
+                break
+
+        if cover_image is None:
+            print("⚠️  No image generated, continuing without cover")
+            return StepOutput(
+                content=newsletter_content,
+                success=True,
+            )
+
+        # Return newsletter content with cover image
+        return StepOutput(
+            content=newsletter_content,
+            images=[cover_image],  # Agno will store this in session_data
+            success=True,
+        )
+
+    except Exception as e:
+        print(f"❌ Error generating cover image: {e}")
+        print("⚠️  Continuing without cover image")
+        # Graceful degradation - return newsletter without image
+        return StepOutput(
+            content=newsletter_content,
+            success=True,
+        )
+
+
+def save_newsletter(step_input: StepInput) -> StepOutput:
+    """
+    Step 5: Save the generated newsletter (with cover image) to database
+
+    The newsletter and cover image are automatically saved by Agno's workflow storage system.
+    This step just returns the complete newsletter content for display.
+
+    Args:
+        step_input: Contains the generated newsletter content and cover image
+
+    Returns:
+        StepOutput with the complete newsletter content and cover image
     """
     # Safely get additional_data (might be None when called from AgentOS UI)
     additional_data = step_input.additional_data or {}
@@ -92,6 +181,10 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
 
     newsletter_id = f"newsletter_{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+    # Check if cover image is available
+    has_cover = hasattr(step_input, 'images') and step_input.images and len(step_input.images) > 0
+    cover_status = "✅ With cover image" if has_cover else "⚠️  No cover image"
+
     # Return the COMPLETE newsletter content, not just a preview
     # The workflow storage system will automatically save this to the database
     complete_output = dedent(f"""
@@ -100,6 +193,7 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
         Newsletter ID: {newsletter_id}
         User ID: {user_id}
         Generated at: {datetime.now().isoformat()}
+        Cover Image: {cover_status}
 
         ═══════════════════════════════════════════════════════════════
 
@@ -110,9 +204,10 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
         📊 Stats: {len(newsletter_content)} characters
     """).strip()
 
-    print(f"✅ Newsletter ready: {newsletter_id} ({len(newsletter_content)} chars)")
+    print(f"✅ Newsletter ready: {newsletter_id} ({len(newsletter_content)} chars, {cover_status})")
 
-    # Return the complete content - Agno will store this in the database
+    # Return the complete content with images - Agno will store this in the database
+    # Images from previous step are automatically propagated
     return StepOutput(
         content=complete_output,
         success=True,
@@ -122,16 +217,17 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
 def create_newsletter_workflow(db: SqliteDb = None) -> Workflow:
     """
     Create the Newsletter Generation Workflow
-    
+
     Workflow Structure:
     1. Extract user context (Function)
     2. Research phase (Parallel - multiple research agents)
     3. Generate newsletter (Digest Agent)
-    4. Save newsletter (Function)
-    
+    4. Generate cover image (Function - Google Gemini)
+    5. Save newsletter with cover (Function)
+
     Args:
         db: Database instance (optional)
-    
+
     Returns:
         Workflow: Configured newsletter generation workflow
     """
@@ -178,27 +274,35 @@ def create_newsletter_workflow(db: SqliteDb = None) -> Workflow:
         agent=digest_agent,
         description="Generate a personalized newsletter based on research findings",
     )
-    
-    # Step 4: Save newsletter
+
+    # Step 4: Generate cover image
+    generate_cover_step = Step(
+        name="Generate Cover Image",
+        executor=generate_cover_image,
+        description="Generate a cover image for the newsletter using Google Gemini",
+    )
+
+    # Step 5: Save newsletter with cover
     save_newsletter_step = Step(
         name="Save Newsletter",
         executor=save_newsletter,
-        description="Save the generated newsletter to database",
+        description="Save the generated newsletter with cover image to database",
     )
     
     # Create workflow
     workflow = Workflow(
         name="Newsletter Generation Workflow",
         description=dedent("""
-            Automatically generates personalized newsletters for users based on their interests.
+            Automatically generates personalized newsletters with cover images for users based on their interests.
 
             This workflow:
             1. Extracts user context from memories and session history
             2. Conducts parallel research from multiple sources
             3. Generates a well-structured newsletter
-            4. Returns the complete newsletter content
+            4. Creates a cover image using Google Gemini
+            5. Returns the complete newsletter with cover image
 
-            The complete newsletter is automatically stored in the database by Agno's storage system.
+            The complete newsletter and cover image are automatically stored in the database by Agno's storage system.
         """).strip(),
         db=db,
         store_events=True,  # Store all workflow events for debugging and analysis
@@ -206,6 +310,7 @@ def create_newsletter_workflow(db: SqliteDb = None) -> Workflow:
             extract_context_step,
             research_phase,
             generate_newsletter_step,
+            generate_cover_step,  # New step for cover image generation
             save_newsletter_step,
         ],
     )

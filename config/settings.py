@@ -24,6 +24,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+# Google Gemini API Key (for image generation)
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# MCP Tools API Keys
+BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
+
 # AgentOS Configuration
 AGENTOS_PORT = int(os.getenv("AGENTOS_PORT", "7777"))
 AGENTOS_HOST = os.getenv("AGENTOS_HOST", "0.0.0.0")
