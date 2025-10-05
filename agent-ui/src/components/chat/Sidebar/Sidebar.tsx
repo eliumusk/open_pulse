@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import Icon from '@/components/ui/icon'
 import { getProviderIcon } from '@/lib/modelProvider'
 import Sessions from './Sessions'
+import Knowledge from './Knowledge'
 import { isValidUrl } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useQueryState } from 'nuqs'
@@ -294,6 +295,7 @@ const Sidebar = () => {
                     </>
                   )}
                 </motion.div>
+                <Knowledge />
                 <Sessions />
               </>
             )}

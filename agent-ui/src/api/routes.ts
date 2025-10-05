@@ -17,5 +17,11 @@ export const APIRoutes = {
 
   GetWorkflows: (agentOSUrl: string) => `${agentOSUrl}/workflows`,
   WorkflowRun: (agentOSUrl: string, workflowId: string) =>
-    `${agentOSUrl}/workflows/${workflowId}/runs`
+    `${agentOSUrl}/workflows/${workflowId}/runs`,
+  GetKnowledgeContent: (agentOSUrl: string) =>
+    `${agentOSUrl}/knowledge/content`,
+  GetKnowledgeContentById: (agentOSUrl: string, contentId: string) =>
+    `${agentOSUrl}/knowledge/content/${contentId}`,
+  GetKnowledgeContentStatus: (agentOSUrl: string, contentId: string) =>
+    `${agentOSUrl}/knowledge/content/${contentId}/status`
 }

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 import {
   AgentDetails,
+  KnowledgeContent,
   SessionEntry,
   TeamDetails,
   WorkflowDetails,
@@ -43,6 +44,10 @@ interface Store {
   setTeams: (teams: TeamDetails[]) => void
   workflows: WorkflowDetails[]
   setWorkflows: (workflows: WorkflowDetails[]) => void
+  knowledgeContent: KnowledgeContent[]
+  setKnowledgeContent: (content: KnowledgeContent[]) => void
+  isKnowledgeLoading: boolean
+  setIsKnowledgeLoading: (loading: boolean) => void
   selectedModel: string
   setSelectedModel: (model: string) => void
   mode: 'agent' | 'team' | 'workflow'
@@ -105,7 +110,11 @@ export const useStore = create<Store>()(
         })),
       isSessionsLoading: false,
       setIsSessionsLoading: (isSessionsLoading) =>
-        set(() => ({ isSessionsLoading }))
+        set(() => ({ isSessionsLoading })),
+      knowledgeContent: [],
+      setKnowledgeContent: (content) => set({ knowledgeContent: content }),
+      isKnowledgeLoading: false,
+      setIsKnowledgeLoading: (loading) => set({ isKnowledgeLoading: loading })
     }),
     {
       name: 'endpoint-storage',

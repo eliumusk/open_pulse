@@ -91,6 +91,21 @@ export interface WorkflowDetails {
   description?: string
 }
 
+export interface KnowledgeContent {
+  id: string
+  name: string
+  description?: string
+  type: string
+  size?: number
+  linked_to?: string
+  metadata?: Record<string, any>
+  access_count?: number
+  status: 'processing' | 'completed' | 'failed'
+  status_message?: string
+  created_at: string
+  updated_at: string
+}
+
 interface MessageContext {
   query: string
   docs?: Array<Record<string, object>>

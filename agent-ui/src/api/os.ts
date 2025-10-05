@@ -2,7 +2,13 @@ import { toast } from 'sonner'
 
 import { APIRoutes } from './routes'
 
-import { AgentDetails, Sessions, TeamDetails, WorkflowDetails } from '@/types/os'
+import {
+  AgentDetails,
+  KnowledgeContent,
+  Sessions,
+  TeamDetails,
+  WorkflowDetails
+} from '@/types/os'
 
 export const getAgentsAPI = async (
   endpoint: string
@@ -147,5 +153,37 @@ export const getWorkflowsAPI = async (
   } catch {
     toast.error('Error fetching workflows')
     return []
+  }
+}
+
+export const getKnowledgeContentAPI = async (
+  endpoint: string,
+  dbId: string,
+  limit: number = 20,
+  page: number = 1
+): Promise<{ data: KnowledgeContent[]; total: number }> => {
+  const url = new URL(APIRoutes.GetKnowledgeContent(endpoint))
+  url.searchParams.set('db_id', dbId)
+  url.searchParams.set('limit', limit.toString())
+  url.searchParams.set('page', page.toString())
+
+  try {
+    const response = await fetch(url.toString(), { method: 'GET' })
+    if (!response.ok) {
+      // Don't show error toast for 404 or knowledge not found
+      if (response.status !== 404) {
+        toast.error(`Failed to fetch knowledge: ${response.statusText}`)
+      }
+      return { data: [], total: 0 }
+    }
+    const data = await response.json()
+    // Handle different response formats
+    if (Array.isArray(data)) {
+      return { data, total: data.length }
+    }
+    return { data: data.data || [], total: data.total || 0 }
+  } catch {
+    // Silent fail for knowledge - it's optional
+    return { data: [], total: 0 }
   }
 }
