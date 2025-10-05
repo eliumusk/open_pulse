@@ -14,6 +14,7 @@ const ChatInput = () => {
   const { handleStreamResponse } = useAIChatStreamHandler()
   const [selectedAgent] = useQueryState('agent')
   const [teamId] = useQueryState('team')
+  const [workflowId] = useQueryState('workflow')
   const [inputMessage, setInputMessage] = useState('')
   const isStreaming = useStore((state) => state.isStreaming)
   const handleSubmit = async () => {
@@ -51,13 +52,15 @@ const ChatInput = () => {
           }
         }}
         className="w-full border border-accent bg-primaryAccent px-4 text-sm text-primary focus:border-accent"
-        disabled={!(selectedAgent || teamId)}
+        disabled={!(selectedAgent || teamId || workflowId)}
         ref={chatInputRef}
       />
       <Button
         onClick={handleSubmit}
         disabled={
-          !(selectedAgent || teamId) || !inputMessage.trim() || isStreaming
+          !(selectedAgent || teamId || workflowId) ||
+          !inputMessage.trim() ||
+          isStreaming
         }
         size="icon"
         className="rounded-xl bg-primary p-5 text-primaryAccent"

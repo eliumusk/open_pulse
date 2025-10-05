@@ -37,6 +37,7 @@ const Sessions = () => {
     history: 'push'
   })
   const [teamId] = useQueryState('team')
+  const [workflowId] = useQueryState('workflow')
   const [sessionId] = useQueryState('session')
   const [dbId] = useQueryState('db_id')
 
@@ -83,16 +84,28 @@ const Sessions = () => {
   }, [])
 
   useEffect(() => {
-    if (hydrated && sessionId && selectedEndpoint && (agentId || teamId)) {
-      const entityType = agentId ? 'agent' : 'team'
-      getSession({ entityType, agentId, teamId, dbId }, sessionId)
+    if (
+      hydrated &&
+      sessionId &&
+      selectedEndpoint &&
+      (agentId || teamId || workflowId)
+    ) {
+      const entityType = agentId
+        ? 'agent'
+        : workflowId
+          ? 'workflow'
+          : 'team'
+      getSession(
+        { entityType, agentId, teamId, workflowId, dbId },
+        sessionId
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, sessionId, selectedEndpoint, agentId, teamId, dbId])
+  }, [hydrated, sessionId, selectedEndpoint, agentId, teamId, workflowId, dbId])
 
   useEffect(() => {
     if (!selectedEndpoint || isEndpointLoading) return
-    if (!(agentId || teamId || dbId)) {
+    if (!(agentId || teamId || workflowId || dbId)) {
       setSessionsData([])
       return
     }
@@ -101,6 +114,7 @@ const Sessions = () => {
       entityType: mode,
       agentId,
       teamId,
+      workflowId,
       dbId
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,6 +122,7 @@ const Sessions = () => {
     selectedEndpoint,
     agentId,
     teamId,
+    workflowId,
     mode,
     isEndpointLoading,
     getSessions,

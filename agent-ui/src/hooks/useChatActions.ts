@@ -3,8 +3,18 @@ import { toast } from 'sonner'
 
 import { useStore } from '../store'
 
-import { AgentDetails, TeamDetails, type ChatMessage } from '@/types/os'
-import { getAgentsAPI, getStatusAPI, getTeamsAPI } from '@/api/os'
+import {
+  AgentDetails,
+  TeamDetails,
+  WorkflowDetails,
+  type ChatMessage
+} from '@/types/os'
+import {
+  getAgentsAPI,
+  getStatusAPI,
+  getTeamsAPI,
+  getWorkflowsAPI
+} from '@/api/os'
 import { useQueryState } from 'nuqs'
 
 const useChatActions = () => {
@@ -16,10 +26,12 @@ const useChatActions = () => {
   const setIsEndpointLoading = useStore((state) => state.setIsEndpointLoading)
   const setAgents = useStore((state) => state.setAgents)
   const setTeams = useStore((state) => state.setTeams)
+  const setWorkflows = useStore((state) => state.setWorkflows)
   const setSelectedModel = useStore((state) => state.setSelectedModel)
   const setMode = useStore((state) => state.setMode)
   const [agentId, setAgentId] = useQueryState('agent')
   const [teamId, setTeamId] = useQueryState('team')
+  const [workflowId, setWorkflowId] = useQueryState('workflow')
   const [, setDbId] = useQueryState('db_id')
 
   const getStatus = useCallback(async () => {
@@ -51,6 +63,16 @@ const useChatActions = () => {
     }
   }, [selectedEndpoint])
 
+  const getWorkflows = useCallback(async () => {
+    try {
+      const workflows = await getWorkflowsAPI(selectedEndpoint)
+      return workflows
+    } catch {
+      toast.error('Error fetching workflows')
+      return []
+    }
+  }, [selectedEndpoint])
+
   const clearChat = useCallback(() => {
     setMessages([])
     setSessionId(null)
@@ -77,22 +99,33 @@ const useChatActions = () => {
       const status = await getStatus()
       let agents: AgentDetails[] = []
       let teams: TeamDetails[] = []
+      let workflows: WorkflowDetails[] = []
       if (status === 200) {
         setIsEndpointActive(true)
         teams = await getTeams()
         agents = await getAgents()
-        console.log(' is active', teams, agents)
+        workflows = await getWorkflows()
+        console.log(' is active', teams, agents, workflows)
 
-        if (!agentId && !teamId) {
+        if (!agentId && !teamId && !workflowId) {
           const currentMode = useStore.getState().mode
           console.log('Current mode:', currentMode)
 
-          if (currentMode === 'team' && teams.length > 0) {
+          if (currentMode === 'workflow' && workflows.length > 0) {
+            const firstWorkflow = workflows[0]
+            setWorkflowId(firstWorkflow.id)
+            setSelectedModel('')
+            setDbId(firstWorkflow.db_id || '')
+            setAgentId(null)
+            setTeamId(null)
+            setWorkflows(workflows)
+          } else if (currentMode === 'team' && teams.length > 0) {
             const firstTeam = teams[0]
             setTeamId(firstTeam.id)
             setSelectedModel(firstTeam.model?.provider || '')
             setDbId(firstTeam.db_id || '')
             setAgentId(null)
+            setWorkflowId(null)
             setTeams(teams)
           } else if (currentMode === 'agent' && agents.length > 0) {
             const firstAgent = agents[0]
@@ -100,18 +133,39 @@ const useChatActions = () => {
             setAgentId(firstAgent.id)
             setSelectedModel(firstAgent.model?.model || '')
             setDbId(firstAgent.db_id || '')
+            setTeamId(null)
+            setWorkflowId(null)
             setAgents(agents)
           }
         } else {
           setAgents(agents)
           setTeams(teams)
-          if (agentId) {
+          setWorkflows(workflows)
+          if (workflowId) {
+            const workflow = workflows.find((w) => w.id === workflowId)
+            if (workflow) {
+              setMode('workflow')
+              setSelectedModel('')
+              setDbId(workflow.db_id || '')
+              setAgentId(null)
+              setTeamId(null)
+            } else if (workflows.length > 0) {
+              const firstWorkflow = workflows[0]
+              setMode('workflow')
+              setWorkflowId(firstWorkflow.id)
+              setSelectedModel('')
+              setDbId(firstWorkflow.db_id || '')
+              setAgentId(null)
+              setTeamId(null)
+            }
+          } else if (agentId) {
             const agent = agents.find((a) => a.id === agentId)
             if (agent) {
               setMode('agent')
               setSelectedModel(agent.model?.model || '')
               setDbId(agent.db_id || '')
               setTeamId(null)
+              setWorkflowId(null)
             } else if (agents.length > 0) {
               const firstAgent = agents[0]
               setMode('agent')
@@ -119,6 +173,7 @@ const useChatActions = () => {
               setSelectedModel(firstAgent.model?.model || '')
               setDbId(firstAgent.db_id || '')
               setTeamId(null)
+              setWorkflowId(null)
             }
           } else if (teamId) {
             const team = teams.find((t) => t.id === teamId)
@@ -127,6 +182,7 @@ const useChatActions = () => {
               setSelectedModel(team.model?.provider || '')
               setDbId(team.db_id || '')
               setAgentId(null)
+              setWorkflowId(null)
             } else if (teams.length > 0) {
               const firstTeam = teams[0]
               setMode('team')
@@ -134,6 +190,7 @@ const useChatActions = () => {
               setSelectedModel(firstTeam.model?.provider || '')
               setDbId(firstTeam.db_id || '')
               setAgentId(null)
+              setWorkflowId(null)
             }
           }
         }
@@ -143,8 +200,9 @@ const useChatActions = () => {
         setSelectedModel('')
         setAgentId(null)
         setTeamId(null)
+        setWorkflowId(null)
       }
-      return { agents, teams }
+      return { agents, teams, workflows }
     } catch (error) {
       console.error('Error initializing :', error)
       setIsEndpointActive(false)
@@ -152,8 +210,10 @@ const useChatActions = () => {
       setSelectedModel('')
       setAgentId(null)
       setTeamId(null)
+      setWorkflowId(null)
       setAgents([])
       setTeams([])
+      setWorkflows([])
     } finally {
       setIsEndpointLoading(false)
     }
@@ -161,17 +221,21 @@ const useChatActions = () => {
     getStatus,
     getAgents,
     getTeams,
+    getWorkflows,
     setIsEndpointActive,
     setIsEndpointLoading,
     setAgents,
     setTeams,
+    setWorkflows,
     setAgentId,
     setSelectedModel,
     setMode,
     setTeamId,
+    setWorkflowId,
     setDbId,
     agentId,
-    teamId
+    teamId,
+    workflowId
   ])
 
   return {
@@ -180,6 +244,7 @@ const useChatActions = () => {
     getAgents,
     focusChatInput,
     getTeams,
+    getWorkflows,
     initialize
   }
 }

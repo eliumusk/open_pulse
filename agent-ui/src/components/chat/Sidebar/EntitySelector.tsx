@@ -15,7 +15,8 @@ import { useEffect } from 'react'
 import useChatActions from '@/hooks/useChatActions'
 
 export function EntitySelector() {
-  const { mode, agents, teams, setMessages, setSelectedModel } = useStore()
+  const { mode, agents, teams, workflows, setMessages, setSelectedModel } =
+    useStore()
 
   const { focusChatInput } = useChatActions()
   const [agentId, setAgentId] = useQueryState('agent', {
@@ -26,21 +27,40 @@ export function EntitySelector() {
     parse: (value) => value || undefined,
     history: 'push'
   })
+  const [workflowId, setWorkflowId] = useQueryState('workflow', {
+    parse: (value) => value || undefined,
+    history: 'push'
+  })
   const [, setSessionId] = useQueryState('session')
 
-  const currentEntities = mode === 'team' ? teams : agents
-  const currentValue = mode === 'team' ? teamId : agentId
-  const placeholder = mode === 'team' ? 'Select Team' : 'Select Agent'
+  const currentEntities =
+    mode === 'team' ? teams : mode === 'workflow' ? workflows : agents
+  const currentValue =
+    mode === 'team' ? teamId : mode === 'workflow' ? workflowId : agentId
+  const placeholder =
+    mode === 'team'
+      ? 'Select Team'
+      : mode === 'workflow'
+        ? 'Select Workflow'
+        : 'Select Agent'
 
   useEffect(() => {
     if (currentValue && currentEntities.length > 0) {
       const entity = currentEntities.find((item) => item.id === currentValue)
       if (entity) {
-        setSelectedModel(entity.model?.model || '')
+        // Workflows don't have model property
+        if (mode !== 'workflow' && 'model' in entity) {
+          setSelectedModel(entity.model?.model || '')
+        } else {
+          setSelectedModel('')
+        }
         if (mode === 'team') {
           setTeamId(entity.id)
         }
-        if (entity.model?.model) {
+        // Focus input for workflow or when model is available
+        if (mode === 'workflow') {
+          focusChatInput()
+        } else if ('model' in entity && entity.model?.model) {
           focusChatInput()
         }
       }
@@ -52,20 +72,31 @@ export function EntitySelector() {
     const newValue = value === currentValue ? null : value
     const selectedEntity = currentEntities.find((item) => item.id === newValue)
 
-    setSelectedModel(selectedEntity?.model?.provider || '')
+    // Workflows don't have model property
+    if (mode !== 'workflow' && selectedEntity && 'model' in selectedEntity) {
+      setSelectedModel(selectedEntity.model?.provider || '')
+    } else {
+      setSelectedModel('')
+    }
 
     if (mode === 'team') {
       setTeamId(newValue)
       setAgentId(null)
+      setWorkflowId(null)
+    } else if (mode === 'workflow') {
+      setWorkflowId(newValue)
+      setAgentId(null)
+      setTeamId(null)
     } else {
       setAgentId(newValue)
       setTeamId(null)
+      setWorkflowId(null)
     }
 
     setMessages([])
     setSessionId(null)
 
-    if (selectedEntity?.model?.provider) {
+    if (mode === 'workflow' || (selectedEntity && 'model' in selectedEntity && selectedEntity.model?.provider)) {
       focusChatInput()
     }
   }

@@ -77,6 +77,20 @@ export interface Team {
   storage?: boolean
 }
 
+export interface Workflow {
+  id: string
+  name: string
+  description: string
+  db_id?: string
+}
+
+export interface WorkflowDetails {
+  id: string
+  name?: string
+  db_id?: string
+  description?: string
+}
+
 interface MessageContext {
   query: string
   docs?: Array<Record<string, object>>
@@ -112,7 +126,15 @@ export enum RunEvent {
   TeamReasoningStep = 'TeamReasoningStep',
   TeamReasoningCompleted = 'TeamReasoningCompleted',
   TeamMemoryUpdateStarted = 'TeamMemoryUpdateStarted',
-  TeamMemoryUpdateCompleted = 'TeamMemoryUpdateCompleted'
+  TeamMemoryUpdateCompleted = 'TeamMemoryUpdateCompleted',
+  // Workflow Events
+  WorkflowRunStarted = 'WorkflowRunStarted',
+  WorkflowRunContent = 'WorkflowRunContent',
+  WorkflowRunCompleted = 'WorkflowRunCompleted',
+  WorkflowRunError = 'WorkflowRunError',
+  WorkflowStepStarted = 'WorkflowStepStarted',
+  WorkflowStepCompleted = 'WorkflowStepCompleted',
+  WorkflowStepError = 'WorkflowStepError'
 }
 
 export interface ResponseAudio {
