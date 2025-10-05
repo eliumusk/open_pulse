@@ -5,6 +5,10 @@ import { APIRoutes } from './routes'
 import {
   AgentDetails,
   KnowledgeContent,
+  Memory,
+  MemoryCreateInput,
+  MemoryListResponse,
+  MemoryUpdateInput,
   Sessions,
   TeamDetails,
   WorkflowDetails
@@ -239,5 +243,136 @@ export const uploadKnowledgeContentAPI = async (
     }
     toast.error('Error uploading content')
     throw new Error('Upload failed')
+  }
+}
+
+// Memory APIs
+export const getMemoriesAPI = async (
+  endpoint: string,
+  userId?: string,
+  agentId?: string,
+  teamId?: string,
+  limit: number = 20,
+  page: number = 1
+): Promise<MemoryListResponse> => {
+  const url = new URL(APIRoutes.GetMemories(endpoint))
+  if (userId) url.searchParams.set('user_id', userId)
+  if (agentId) url.searchParams.set('agent_id', agentId)
+  if (teamId) url.searchParams.set('team_id', teamId)
+  url.searchParams.set('limit', limit.toString())
+  url.searchParams.set('page', page.toString())
+
+  try {
+    const response = await fetch(url.toString(), { method: 'GET' })
+    if (!response.ok) {
+      if (response.status !== 404) {
+        toast.error(`Failed to fetch memories: ${response.statusText}`)
+      }
+      return { data: [], meta: { page: 1, limit, total_pages: 0, total_count: 0 } }
+    }
+    return await response.json()
+  } catch {
+    return { data: [], meta: { page: 1, limit, total_pages: 0, total_count: 0 } }
+  }
+}
+
+export const createMemoryAPI = async (
+  endpoint: string,
+  data: MemoryCreateInput
+): Promise<Memory> => {
+  const url = APIRoutes.CreateMemory(endpoint)
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.detail || errorData.message || response.statusText
+      toast.error(`Failed to create memory: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    const result = await response.json()
+    toast.success('Memory created successfully')
+    return result
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    toast.error('Error creating memory')
+    throw new Error('Create failed')
+  }
+}
+
+export const updateMemoryAPI = async (
+  endpoint: string,
+  memoryId: string,
+  data: MemoryUpdateInput,
+  userId?: string
+): Promise<Memory> => {
+  const url = APIRoutes.UpdateMemory(endpoint, memoryId)
+
+  // PATCH requires user_id in the body
+  const requestBody = {
+    ...data,
+    user_id: userId
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.detail || errorData.message || response.statusText
+      toast.error(`Failed to update memory: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    const result = await response.json()
+    toast.success('Memory updated successfully')
+    return result
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    toast.error('Error updating memory')
+    throw new Error('Update failed')
+  }
+}
+
+export const deleteMemoryAPI = async (
+  endpoint: string,
+  memoryId: string
+): Promise<void> => {
+  const url = APIRoutes.DeleteMemory(endpoint, memoryId)
+
+  try {
+    const response = await fetch(url, { method: 'DELETE' })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.detail || errorData.message || response.statusText
+      toast.error(`Failed to delete memory: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    toast.success('Memory deleted successfully')
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    toast.error('Error deleting memory')
+    throw new Error('Delete failed')
   }
 }

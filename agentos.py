@@ -22,11 +22,8 @@ from tools import get_mcp_tools
 validate_settings()
 
 # Create shared database instance
-# ✅ Use Agno's default table names for consistency
 db = SqliteDb(
     db_file=DATABASE_FILE,
-    # Don't specify session_table - use default 'sessions'
-    # Don't specify memory_table - use default 'memories'
 )
 
 # Global MCP tools instance
@@ -121,16 +118,6 @@ if __name__ == "__main__":
 📚 API Documentation: http://{AGENTOS_HOST}:{AGENTOS_PORT}/docs
 🔌 MCP Server: http://{AGENTOS_HOST}:{AGENTOS_PORT}/mcp
 
-Available Agents:
-  • Newsletter Agent - Chat about your interests
-  • Digest Agent - Generate personalized newsletters
-  • Research Agent - Find relevant information
-
-Available Workflows:
-  • Newsletter Generation Workflow - Full workflow with LLM and search
-  • Simple Newsletter Workflow - Simplified workflow for testing (no API calls)
-
-Press Ctrl+C to stop the server
 """)
     
     agent_os.serve(

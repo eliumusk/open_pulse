@@ -106,6 +106,37 @@ export interface KnowledgeContent {
   updated_at: string
 }
 
+export interface Memory {
+  memory_id: string
+  memory: string
+  topics: string[] | null
+  agent_id: string | null
+  team_id: string | null
+  user_id: string | null
+  updated_at: string
+}
+
+export interface MemoryCreateInput {
+  memory: string
+  user_id?: string
+  topics?: string[]
+}
+
+export interface MemoryUpdateInput {
+  memory?: string
+  topics?: string[]
+}
+
+export interface MemoryListResponse {
+  data: Memory[]
+  meta: {
+    page: number
+    limit: number
+    total_pages: number
+    total_count: number
+  }
+}
+
 interface MessageContext {
   query: string
   docs?: Array<Record<string, object>>

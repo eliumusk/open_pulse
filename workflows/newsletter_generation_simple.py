@@ -15,7 +15,7 @@ def extract_user_context_simple(step_input: StepInput) -> StepOutput:
     不查询数据库，直接使用输入
     """
     additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default_user")
+    user_id = additional_data.get("user_id", "default")
     
     print(f"📊 Extracting context for user: {user_id}")
     
@@ -159,7 +159,7 @@ def save_newsletter_simple(step_input: StepInput) -> StepOutput:
     返回完整内容（Agno 会自动保存到数据库）
     """
     additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default_user")
+    user_id = additional_data.get("user_id", "default")
     newsletter_content = step_input.previous_step_content or step_input.input
     
     print(f"💾 Newsletter ready for user: {user_id}")

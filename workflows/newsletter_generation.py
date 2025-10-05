@@ -37,7 +37,7 @@ def extract_user_context(step_input: StepInput) -> StepOutput:
     """
     # Safely get additional_data (might be None when called from AgentOS UI)
     additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default_user")
+    user_id = additional_data.get("user_id", "default")
     session_id = additional_data.get("session_id")
 
     print(f"📊 Extracting context for user: {user_id}")
@@ -174,7 +174,7 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
     """
     # Safely get additional_data (might be None when called from AgentOS UI)
     additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default_user")
+    user_id = additional_data.get("user_id", "default")
     newsletter_content = step_input.previous_step_content or step_input.input
 
     print(f"💾 Newsletter ready for user: {user_id}")
