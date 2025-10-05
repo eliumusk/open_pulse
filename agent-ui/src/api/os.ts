@@ -187,3 +187,57 @@ export const getKnowledgeContentAPI = async (
     return { data: [], total: 0 }
   }
 }
+
+export const uploadKnowledgeContentAPI = async (
+  endpoint: string,
+  dbId: string,
+  data: {
+    file?: File
+    url?: string
+    text_content?: string
+    name: string
+    description?: string
+  }
+): Promise<KnowledgeContent> => {
+  const apiUrl = new URL(APIRoutes.GetKnowledgeContent(endpoint))
+  apiUrl.searchParams.set('db_id', dbId)
+
+  const formData = new FormData()
+  formData.append('name', data.name)
+  if (data.description) {
+    formData.append('description', data.description)
+  }
+
+  if (data.file) {
+    formData.append('file', data.file)
+  } else if (data.url) {
+    formData.append('url', data.url)
+  } else if (data.text_content) {
+    formData.append('text_content', data.text_content)
+  }
+
+  try {
+    const response = await fetch(apiUrl.toString(), {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.detail || errorData.message || response.statusText
+      toast.error(`Failed to upload content: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    const result = await response.json()
+    toast.success('Content uploaded successfully')
+    return result
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    toast.error('Error uploading content')
+    throw new Error('Upload failed')
+  }
+}

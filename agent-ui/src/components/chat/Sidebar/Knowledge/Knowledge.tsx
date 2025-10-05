@@ -4,12 +4,18 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useQueryState } from 'nuqs'
 
 import { useStore } from '@/store'
-import { getKnowledgeContentAPI } from '@/api/os'
+import { getKnowledgeContentAPI, uploadKnowledgeContentAPI } from '@/api/os'
 
 import KnowledgeItem from './KnowledgeItem'
 import KnowledgeBlankState from './KnowledgeBlankState'
+import AddKnowledgeDialog from './AddKnowledgeDialog'
+import UploadFileDialog from './UploadFileDialog'
+import UploadTextDialog from './UploadTextDialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import Icon from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface SkeletonListProps {
   skeletonCount: number
@@ -51,27 +57,77 @@ const Knowledge = () => {
   } = useStore()
 
   const [isScrolling, setIsScrolling] = useState(false)
+  const [showTypeDialog, setShowTypeDialog] = useState(false)
+  const [showFileDialog, setShowFileDialog] = useState(false)
+  const [showWebDialog, setShowWebDialog] = useState(false)
+  const [showTextDialog, setShowTextDialog] = useState(false)
 
-  console.log('Knowledge component rendered', {
-    isKnowledgeLoading,
-    isEndpointLoading,
-    knowledgeContentLength: knowledgeContent.length,
-    isEndpointActive
-  })
+  // Reload knowledge content
+  const reloadKnowledge = async () => {
+    if (!selectedEndpoint || !dbId) return
+
+    try {
+      setIsKnowledgeLoading(true)
+      const result = await getKnowledgeContentAPI(selectedEndpoint, dbId, 20, 1)
+      setKnowledgeContent(result.data)
+    } catch (error) {
+      console.error('Error reloading knowledge:', error)
+    } finally {
+      setIsKnowledgeLoading(false)
+    }
+  }
+
+  // Handle file upload
+  const handleFileUpload = async (data: {
+    file?: File
+    url?: string
+    name: string
+    description: string
+  }) => {
+    if (!selectedEndpoint || !dbId) {
+      toast.error('No endpoint or database selected')
+      return
+    }
+
+    try {
+      await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
+        file: data.file,
+        url: data.url,
+        name: data.name,
+        description: data.description
+      })
+      await reloadKnowledge()
+    } catch (error) {
+      // Error already handled in API function
+    }
+  }
+
+  // Handle text/web upload
+  const handleTextUpload = async (data: {
+    text: string
+    name: string
+    description: string
+  }, isWeb: boolean) => {
+    if (!selectedEndpoint || !dbId) {
+      toast.error('No endpoint or database selected')
+      return
+    }
+
+    try {
+      await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
+        [isWeb ? 'url' : 'text_content']: data.text,
+        name: data.name,
+        description: data.description
+      })
+      await reloadKnowledge()
+    } catch (error) {
+      // Error already handled in API function
+    }
+  }
 
   // Load knowledge content when entity changes
   useEffect(() => {
     const loadKnowledge = async () => {
-      console.log('Knowledge: Loading...', {
-        selectedEndpoint,
-        isEndpointLoading,
-        hydrated,
-        agentId,
-        teamId,
-        workflowId,
-        dbId
-      })
-
       // Don't load if endpoint is not ready
       if (!selectedEndpoint || isEndpointLoading || !hydrated) return
 
@@ -83,16 +139,13 @@ const Knowledge = () => {
 
       // Don't load if no db_id
       if (!dbId) {
-        console.log('Knowledge: No db_id, showing empty state')
         setKnowledgeContent([])
         return
       }
 
       try {
         setIsKnowledgeLoading(true)
-        console.log('Knowledge: Fetching from API...')
         const result = await getKnowledgeContentAPI(selectedEndpoint, dbId, 20, 1)
-        console.log('Knowledge: Received data:', result)
         setKnowledgeContent(result.data)
       } catch (error) {
         console.error('Error loading knowledge:', error)
@@ -129,7 +182,20 @@ const Knowledge = () => {
 
   return (
     <div className="w-full">
-      <div className="mb-2 w-full text-xs font-medium uppercase">Knowledge</div>
+      <div className="mb-2 flex w-full items-center justify-between">
+        <div className="text-xs font-medium uppercase">Knowledge</div>
+        {isEndpointActive && dbId && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowTypeDialog(true)}
+            className="h-6 px-2 text-xs hover:bg-background-secondary"
+          >
+            <Icon type="plus-icon" size="xs" />
+            <span className="ml-1">Add</span>
+          </Button>
+        )}
+      </div>
       <div
         className={`max-h-[300px] overflow-y-auto font-geist transition-all duration-300 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:transition-opacity [&::-webkit-scrollbar]:duration-300 ${
           isScrolling
@@ -151,6 +217,41 @@ const Knowledge = () => {
           </div>
         )}
       </div>
+
+      {/* Dialogs */}
+      <AddKnowledgeDialog
+        open={showTypeDialog}
+        onOpenChange={setShowTypeDialog}
+        onSelectType={(type) => {
+          if (type === 'file') {
+            setShowFileDialog(true)
+          } else if (type === 'web') {
+            setShowWebDialog(true)
+          } else if (type === 'text') {
+            setShowTextDialog(true)
+          }
+        }}
+      />
+
+      <UploadFileDialog
+        open={showFileDialog}
+        onOpenChange={setShowFileDialog}
+        onUpload={handleFileUpload}
+      />
+
+      <UploadTextDialog
+        open={showWebDialog}
+        onOpenChange={setShowWebDialog}
+        onUpload={(data) => handleTextUpload(data, true)}
+        type="web"
+      />
+
+      <UploadTextDialog
+        open={showTextDialog}
+        onOpenChange={setShowTextDialog}
+        onUpload={(data) => handleTextUpload(data, false)}
+        type="text"
+      />
     </div>
   )
 }
