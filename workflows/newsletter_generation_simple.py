@@ -1,297 +1,139 @@
-"""
-简化版 Newsletter Generation Workflow
-用于调试存储功能，不调用真实的 LLM 和搜索 API
-"""
+
 from datetime import datetime
 from textwrap import dedent
-from agno.workflow import Workflow, Step
+from pathlib import Path
+import uuid
+from google import genai
+from agno.media import Image
+from agno.workflow import Workflow, Step, Parallel
 from agno.workflow.types import StepInput, StepOutput
 from agno.db.sqlite import SqliteDb
+from agents import create_digest_agent, create_research_agent
+from config.settings import DATABASE_FILE, GOOGLE_API_KEY, IMAGES_DIR, AGENTOS_HOST, AGENTOS_PORT
 
-
-def extract_user_context_simple(step_input: StepInput) -> StepOutput:
-    """
-    简化版：提取用户上下文
-    不查询数据库，直接使用输入
-    """
-    additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default")
-    
-    print(f"📊 Extracting context for user: {user_id}")
-    
-    interests = step_input.input or "technology, AI, and science"
-    
-    context_summary = dedent(f"""
-        User Context Summary:
-        - User ID: {user_id}
-        - Interests: {interests}
-        - Generated at: {datetime.now().isoformat()}
-        
-        Ready to generate newsletter.
-    """).strip()
-    
-    print(f"✅ Context extracted: {len(context_summary)} characters")
-    
-    return StepOutput(
-        content=context_summary,
-        success=True,
-    )
-
-
-def mock_research(step_input: StepInput) -> StepOutput:
-    """
-    简化版：模拟研究
-    不调用真实的搜索 API，返回模拟数据
-    """
-    print("🔍 Conducting mock research...")
-    
-    research_results = dedent("""
-        Research Results:
-        
-        1. **AI Developments**
-           - New breakthroughs in large language models
-           - Improved reasoning capabilities
-           - Better multimodal understanding
-        
-        2. **Quantum Computing**
-           - Progress in error correction
-           - New quantum algorithms
-           - Commercial applications emerging
-        
-        3. **Space Exploration**
-           - Mars mission updates
-           - New telescope discoveries
-           - Private space industry growth
-    """).strip()
-    
-    print(f"✅ Research completed: {len(research_results)} characters")
-    
-    return StepOutput(
-        content=research_results,
-        success=True,
-    )
-
-
-def generate_newsletter_simple(step_input: StepInput) -> StepOutput:
-    """
-    简化版：生成 newsletter
-    不调用 LLM，使用模板生成
-    """
-    print("📝 Generating newsletter...")
-    
-    # 获取前面步骤的内容
-    context = step_input.previous_step_content or "No context"
-    
-    # 生成 newsletter
-    newsletter = dedent(f"""
-        # 📰 Open Pulse Newsletter
-        
-        **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        
-        ---
-        
-        ## 🎯 Your Personalized Tech Digest
-        
-        Welcome to your personalized newsletter! Here's what's happening in the world of technology.
-        
-        ## 🤖 Artificial Intelligence
-        
-        The AI landscape continues to evolve rapidly. Recent developments show:
-        
-        - **Large Language Models**: New architectures are pushing the boundaries of what's possible
-        - **Reasoning Capabilities**: Models are getting better at complex problem-solving
-        - **Multimodal AI**: Integration of text, images, and other modalities is improving
-        
-        ### Key Insight
-        > The focus is shifting from raw performance to reliability and practical applications.
-        
-        ## ⚛️ Quantum Computing
-        
-        Quantum computing is moving from theory to practice:
-        
-        - **Error Correction**: Major breakthroughs in maintaining quantum states
-        - **New Algorithms**: Researchers are discovering novel quantum algorithms
-        - **Commercial Applications**: First real-world use cases are emerging
-        
-        ### What This Means
-        We're approaching the point where quantum computers can solve problems that classical computers cannot.
-        
-        ## 🚀 Space Exploration
-        
-        The final frontier is more accessible than ever:
-        
-        - **Mars Missions**: Ongoing exploration reveals new insights about the Red Planet
-        - **Telescope Discoveries**: New observations are expanding our understanding of the universe
-        - **Private Space Industry**: Commercial space travel is becoming a reality
-        
-        ### Looking Ahead
-        The next decade will see unprecedented human activity in space.
-        
-        ---
-        
-        ## 💡 Conclusion
-        
-        Technology continues to advance at an incredible pace. Stay curious, keep learning, and embrace the future!
-        
-        ---
-        
-        **Newsletter Stats:**
-        - Topics covered: 3
-        - Reading time: ~3 minutes
-        - Generated by: Open Pulse AI
-        
-        ---
-        
-        *This is a simplified test newsletter. In production, content will be personalized based on your interests and recent conversations.*
-    """).strip()
-    
-    print(f"✅ Newsletter generated: {len(newsletter)} characters")
-    
-    return StepOutput(
-        content=newsletter,
-        success=True,
-    )
-
-
-def save_newsletter_simple(step_input: StepInput) -> StepOutput:
-    """
-    简化版：保存 newsletter
-    返回完整内容（Agno 会自动保存到数据库）
-    """
-    additional_data = step_input.additional_data or {}
-    user_id = additional_data.get("user_id", "default")
+def generate_cover_image(step_input: StepInput) -> StepOutput:
+    """Generate a cover image for the newsletter using Google Gemini and save to filesystem"""
     newsletter_content = step_input.previous_step_content or step_input.input
-    
-    print(f"💾 Newsletter ready for user: {user_id}")
-    
+    print("🎨 Generating cover image for newsletter...")
+
+    try:
+        # Extract title (use first non-empty line)
+        title = next(
+            (line.strip() for line in newsletter_content.split("\n") if line.strip()),
+            "Newsletter",
+        )
+
+        prompt = (
+            f"Create a modern, minimalist, high-quality cover image for a newsletter titled: {title}."
+        )
+        print(f"📝 Image prompt: {prompt}")
+
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[prompt],
+        )
+
+        # Extract image bytes
+        image_bytes = None
+        for part in response.candidates[0].content.parts:
+            if part.inline_data is not None:
+                image_bytes = part.inline_data.data
+                print(f"✅ Cover image generated: {len(image_bytes)} bytes")
+                break
+
+        if image_bytes is None:
+            print("⚠️ No image generated, continuing without cover")
+            return StepOutput(content=newsletter_content, success=True)
+
+        # Save image to filesystem
+        image_id = str(uuid.uuid4())
+        image_filename = f"newsletter_cover_{image_id}.png"
+        image_path = IMAGES_DIR / image_filename
+
+        with open(image_path, 'wb') as f:
+            f.write(image_bytes)
+
+        print(f"💾 Image saved to: {image_path}")
+
+        # Create image URL (accessible via static files)
+        # Use localhost for development, should be configurable for production
+        image_url = f"http://{AGENTOS_HOST}:{AGENTOS_PORT}/static/images/{image_filename}"
+
+        # Return Image with URL instead of content
+        cover_image = Image(url=image_url, id=image_id)
+        print(f"🔗 Image URL: {image_url}")
+
+        return StepOutput(content=newsletter_content, images=[cover_image], success=True)
+
+    except Exception as e:
+        print(f"❌ Error generating cover image: {e}")
+        import traceback
+        traceback.print_exc()
+        return StepOutput(content=newsletter_content, success=True)
+
+
+def save_newsletter(step_input: StepInput) -> StepOutput:
+    """Save the generated newsletter with optional cover image"""
+    user_id = (step_input.additional_data or {}).get("user_id", "default")
+    newsletter_content = step_input.previous_step_content or step_input.input
     newsletter_id = f"newsletter_{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # 返回完整的 newsletter 内容
-    complete_output = dedent(f"""
+
+    has_cover = hasattr(step_input, "images") and step_input.images
+    cover_status = "✅ With cover image" if has_cover else "⚠️ No cover image"
+
+    final_output = dedent(f"""
         ✅ Newsletter Generated Successfully!
-        
+
         Newsletter ID: {newsletter_id}
         User ID: {user_id}
         Generated at: {datetime.now().isoformat()}
-        
-        ═══════════════════════════════════════════════════════════════
-        
+        Cover Image: {cover_status}
+
         {newsletter_content}
-        
-        ═══════════════════════════════════════════════════════════════
-        
-        📊 Stats: {len(newsletter_content)} characters
+
+     
     """).strip()
-    
-    print(f"✅ Newsletter ready: {newsletter_id} ({len(newsletter_content)} chars)")
-    
-    return StepOutput(
-        content=complete_output,
-        success=True,
-    )
+
+    print(f"💾 Saved newsletter {newsletter_id} ({cover_status})")
+    return StepOutput(content=final_output, success=True)
 
 
-def create_simple_newsletter_workflow(db: SqliteDb) -> Workflow:
-    """
-    创建简化版的 Newsletter Generation Workflow
-    
-    特点：
-    - 不调用 LLM API（节省成本）
-    - 不调用搜索 API（快速测试）
-    - 专注于测试存储功能
-    - 生成固定的模板内容
-    
-    Args:
-        db: 数据库实例
-    
-    Returns:
-        Workflow 实例
-    """
-    # Step 1: 提取用户上下文
-    extract_context_step = Step(
-        name="Extract User Context",
-        executor=extract_user_context_simple,
-        description="Extract user context (simplified)",
-    )
-    
-    # Step 2: 模拟研究
-    research_step = Step(
-        name="Mock Research",
-        executor=mock_research,
-        description="Mock research without API calls",
-    )
-    
-    # Step 3: 生成 newsletter
-    generate_newsletter_step = Step(
+def create_simple_newsletter_workflow(db: SqliteDb = None) -> Workflow:
+    """Simplified newsletter workflow with one agent, image generation, and save"""
+    if db is None:
+        db = SqliteDb(db_file=DATABASE_FILE)
+
+    # Single agent
+    digest_agent = create_digest_agent(db=db)
+
+    # Step 1: Generate newsletter content
+    generate_step = Step(
         name="Generate Newsletter",
-        executor=generate_newsletter_simple,
-        description="Generate newsletter from template",
+        agent=digest_agent,
+        description="Generate a newsletter based on user's input or topic.",
     )
-    
-    # Step 4: 保存 newsletter
-    save_newsletter_step = Step(
+
+    # Step 2: Generate cover image
+    cover_step = Step(
+        name="Generate Cover Image",
+        executor=generate_cover_image,
+        description="Generate a cover image for the newsletter using Google Gemini.",
+    )
+
+    # Step 3: Save newsletter
+    save_step = Step(
         name="Save Newsletter",
-        executor=save_newsletter_simple,
-        description="Return complete newsletter content",
+        executor=save_newsletter,
+        description="Save the final newsletter (with optional cover image).",
     )
-    
-    # 创建 workflow
+
     workflow = Workflow(
         name="Simple Newsletter Workflow",
-        description=dedent("""
-            Simplified newsletter generation workflow for testing storage.
-            
-            This workflow:
-            1. Extracts user context (no DB query)
-            2. Mocks research (no API calls)
-            3. Generates newsletter (template-based)
-            4. Returns complete content (auto-saved by Agno)
-            
-            Perfect for debugging storage without API costs!
-        """).strip(),
+        description="Simplified workflow: generate newsletter → create cover → save.",
         db=db,
-        store_events=True,  # 存储所有事件用于调试
-        steps=[
-            extract_context_step,
-            research_step,
-            generate_newsletter_step,
-            save_newsletter_step,
-        ],
+        steps=[generate_step, cover_step, save_step],
+        store_events=True,
     )
-    
+
     return workflow
-
-
-# 测试代码
-if __name__ == "__main__":
-    import asyncio
-    from config.settings import DATABASE_FILE
-    
-    print("🧪 Testing Simple Newsletter Workflow")
-    print("=" * 60)
-    
-    # 创建数据库实例
-    db = SqliteDb(db_file=DATABASE_FILE)
-    
-    # 创建 workflow
-    workflow = create_simple_newsletter_workflow(db)
-    
-    # 运行测试
-    async def test():
-        result = await workflow.arun(
-            input="I'm interested in AI, quantum computing, and space exploration",
-            additional_data={
-                "user_id": "test_user_123",
-                "session_id": "test_session_456",
-            },
-        )
-        
-        print("\n" + "=" * 60)
-        print("📊 Result:")
-        print("=" * 60)
-        print(result.content)
-        print("\n" + "=" * 60)
-        print(f"✅ Content length: {len(result.content)} characters")
-    
-    asyncio.run(test())
-

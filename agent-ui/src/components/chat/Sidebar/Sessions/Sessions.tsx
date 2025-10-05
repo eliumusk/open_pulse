@@ -95,10 +95,17 @@ const Sessions = () => {
         : workflowId
           ? 'workflow'
           : 'team'
-      getSession(
-        { entityType, agentId, teamId, workflowId, dbId },
-        sessionId
-      )
+
+      // Delay loading session to allow workflow to create initial data
+      // This prevents 404 errors when session is just created
+      const timeoutId = setTimeout(() => {
+        getSession(
+          { entityType, agentId, teamId, workflowId, dbId },
+          sessionId
+        )
+      }, 1000) // 1 second delay
+
+      return () => clearTimeout(timeoutId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, sessionId, selectedEndpoint, agentId, teamId, workflowId, dbId])

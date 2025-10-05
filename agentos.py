@@ -6,6 +6,7 @@ import asyncio
 from agno.db.sqlite import SqliteDb
 from agno.os import AgentOS
 from agno.tools.mcp import MultiMCPTools
+from fastapi.staticfiles import StaticFiles
 
 from agents import create_newsletter_agent, create_digest_agent, create_research_agent
 from workflows import create_newsletter_workflow, create_simple_newsletter_workflow
@@ -13,6 +14,7 @@ from config.settings import (
     DATABASE_FILE,
     AGENTOS_PORT,
     AGENTOS_HOST,
+    STATIC_DIR,
     validate_settings,
 )
 from tools import get_mcp_tools
@@ -78,6 +80,9 @@ agent_os = AgentOS(
 
 # Get the FastAPI app
 app = agent_os.get_app()
+
+# Mount static files directory for serving images
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @app.on_event("startup")

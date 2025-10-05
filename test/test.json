@@ -1,0 +1,73 @@
+{
+  "input": "我想知道中国有哪些美食",
+  "content": {
+    "newsletter_info": {
+      "Newsletter ID": "newsletter_default_20251005_200013",
+      "User ID": "default",
+      "Generated at": "2025-10-05T20:00:13.210955",
+      "Cover Image": "✅ With cover image"
+    },
+    "introduction": "中国的美食丰富多样，涵盖了各个地区的特色和风味。以下是一些著名的中国美食：",
+    "famous_dishes": [
+      {
+        "id": 1,
+        "name": "北京烤鸭",
+        "description": "作为北京著名的传统菜肴，北京烤鸭以其酥脆的皮和鲜嫩的肉而闻名。通常配有薄饼、甜面酱和葱等配料。"
+      },
+      {
+        "id": 2,
+        "name": "麻婆豆腐",
+        "description": "四川省的经典菜，这道菜以豆腐为主料，配以辣椒和花椒，口感麻辣爽口，常见于川菜餐馆。"
+      },
+      {
+        "id": 3,
+        "name": "小笼包",
+        "description": "起源于上海的小笼包以其皮薄多汁而受到广泛喜爱。包子内有肉馅和汤汁，通常配酱油和醋食用。"
+      },
+      {
+        "id": 4,
+        "name": "红烧肉",
+        "description": "这是一道江南地区经典的家常菜，主要材料为五花肉，配以老抽、糖等慢炖而成，肉质鲜嫩，色泽红亮。"
+      },
+      {
+        "id": 5,
+        "name": "福建炒饭",
+        "description": "独特的福建风味，常用户海鲜、鸡蛋和各种洗净的蔬菜炒制，风味丰富，米饭颗粒分明。"
+      },
+      {
+        "id": 6,
+        "name": "义乌邮政菜",
+        "description": "源自浙江义乌，特色在于用生鱼做菜，味道清淡，健康又美味。"
+      },
+      {
+        "id": 7,
+        "name": "凉皮",
+        "description": "西北地区的传统小吃，面皮柔软，通常配以黄瓜丝和辣椒油，清爽可口。"
+      },
+      {
+        "id": 8,
+        "name": "鱼香茄子",
+        "description": "素菜的经典代表，茄子炒制后混合鱼香味调料，酸甜适中，口感丰富。"
+      }
+    ],
+    "conclusion": "每一种美食都有其背后的故事和独特的地方文化，可以根据自己的口味去探寻和尝试不同的菜肴。"
+  },
+  "content_type": "str",
+  "workflow_id": "simple-newsletter-workflow",
+  "workflow_name": "Simple Newsletter Workflow",
+  "run_id": "62006e99-42a0-400b-bc98-cc95646231db",
+  "session_id": "d875bb99-3346-4b0b-b4a5-309552f0c7c7",
+  "created_at": 1759665573,
+  "status": "COMPLETED",
+  "images": [
+    {
+      "id": "f4634150-8f7a-49af-96c0-6fc375496779",
+      "url": "http://0.0.0.0:7777/static/images/newsletter_cover_f4634150-8f7a-49af-96c0-6fc375496779.png"
+    }
+  ],
+  "videos": [],
+  "audio": [],
+  "step_results_summary": [
+    "Newsletter content generated and saved successfully."
+  ]
+}

@@ -34,6 +34,14 @@ BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
 AGENTOS_PORT = int(os.getenv("AGENTOS_PORT", "7777"))
 AGENTOS_HOST = os.getenv("AGENTOS_HOST", "0.0.0.0")
 
+# Static files configuration
+STATIC_DIR = PROJECT_ROOT / "static"
+IMAGES_DIR = STATIC_DIR / "images"
+
+# Ensure directories exist
+STATIC_DIR.mkdir(exist_ok=True)
+IMAGES_DIR.mkdir(exist_ok=True)
+
 # Scheduler Configuration
 NEWSLETTER_GENERATION_HOUR = int(os.getenv("NEWSLETTER_GENERATION_HOUR", "8"))
 NEWSLETTER_GENERATION_MINUTE = int(os.getenv("NEWSLETTER_GENERATION_MINUTE", "0"))

@@ -91,6 +91,14 @@ const useSessionLoader = () => {
           dbId
         )
         console.log('Fetched session:', response)
+
+        // If response is empty array, session exists but has no runs yet
+        // Don't clear current messages (might be streaming)
+        if (Array.isArray(response) && response.length === 0) {
+          console.log('Session exists but has no runs yet, keeping current messages')
+          return null
+        }
+
         if (response) {
           if (Array.isArray(response)) {
             const messagesFor = response.flatMap((run) => {
