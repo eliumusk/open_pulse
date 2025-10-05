@@ -246,6 +246,35 @@ export const uploadKnowledgeContentAPI = async (
   }
 }
 
+export const deleteKnowledgeContentAPI = async (
+  endpoint: string,
+  contentId: string,
+  dbId: string
+): Promise<void> => {
+  const url = new URL(APIRoutes.DeleteKnowledgeContent(endpoint, contentId))
+  url.searchParams.set('db_id', dbId)
+
+  try {
+    const response = await fetch(url.toString(), { method: 'DELETE' })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.detail || errorData.message || response.statusText
+      toast.error(`Failed to delete content: ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    toast.success('Content deleted successfully')
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+    toast.error('Error deleting content')
+    throw new Error('Delete failed')
+  }
+}
+
 // Memory APIs
 export const getMemoriesAPI = async (
   endpoint: string,

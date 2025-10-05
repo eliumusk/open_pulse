@@ -4,18 +4,24 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useQueryState } from 'nuqs'
 
 import { useStore } from '@/store'
-import { getKnowledgeContentAPI, uploadKnowledgeContentAPI } from '@/api/os'
+import {
+  getKnowledgeContentAPI,
+  uploadKnowledgeContentAPI,
+  deleteKnowledgeContentAPI
+} from '@/api/os'
 
 import KnowledgeItem from './KnowledgeItem'
 import KnowledgeBlankState from './KnowledgeBlankState'
 import AddKnowledgeDialog from './AddKnowledgeDialog'
 import UploadFileDialog from './UploadFileDialog'
 import UploadTextDialog from './UploadTextDialog'
+import ViewKnowledgeDialog from './ViewKnowledgeDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import Icon from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { KnowledgeContent } from '@/types/os'
 
 interface SkeletonListProps {
   skeletonCount: number
@@ -56,11 +62,12 @@ const Knowledge = () => {
     setIsKnowledgeLoading
   } = useStore()
 
-  const [isScrolling, setIsScrolling] = useState(false)
   const [showTypeDialog, setShowTypeDialog] = useState(false)
   const [showFileDialog, setShowFileDialog] = useState(false)
   const [showWebDialog, setShowWebDialog] = useState(false)
   const [showTextDialog, setShowTextDialog] = useState(false)
+  const [showViewDialog, setShowViewDialog] = useState(false)
+  const [viewingContent, setViewingContent] = useState<KnowledgeContent | null>(null)
 
   // Reload knowledge content
   const reloadKnowledge = async () => {
@@ -169,6 +176,29 @@ const Knowledge = () => {
     setIsKnowledgeLoading
   ])
 
+  // Handle delete knowledge
+  const handleDeleteKnowledge = async (contentId: string) => {
+    if (!selectedEndpoint || !dbId) {
+      toast.error('No endpoint or database selected')
+      return
+    }
+
+    if (window.confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+      try {
+        await deleteKnowledgeContentAPI(selectedEndpoint, contentId, dbId)
+        await reloadKnowledge()
+      } catch (error) {
+        // Error already handled in API function
+      }
+    }
+  }
+
+  // Handle view knowledge
+  const handleViewKnowledge = (content: KnowledgeContent) => {
+    setViewingContent(content)
+    setShowViewDialog(true)
+  }
+
   if (isKnowledgeLoading || isEndpointLoading) {
     return (
       <div className="w-full">
@@ -196,29 +226,31 @@ const Knowledge = () => {
           </Button>
         )}
       </div>
-      <div
-        className={`max-h-[300px] overflow-y-auto font-geist transition-all duration-300 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:transition-opacity [&::-webkit-scrollbar]:duration-300 ${
-          isScrolling
-            ? '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:opacity-0'
-            : '[&::-webkit-scrollbar]:opacity-100'
-        }`}
-        onScroll={() => setIsScrolling(true)}
-        onMouseOver={() => setIsScrolling(true)}
-        onMouseLeave={() => setIsScrolling(false)}
-      >
+      <div className="font-geist">
         {!isEndpointActive ||
         (!isKnowledgeLoading && knowledgeContent.length === 0) ? (
           <KnowledgeBlankState />
         ) : (
-          <div className="flex flex-col gap-y-1 pr-1">
+          <div className="flex flex-col gap-y-1">
             {knowledgeContent.map((content) => (
-              <KnowledgeItem key={content.id} content={content} />
+              <KnowledgeItem
+                key={content.id}
+                content={content}
+                onDelete={handleDeleteKnowledge}
+                onView={handleViewKnowledge}
+              />
             ))}
           </div>
         )}
       </div>
 
       {/* Dialogs */}
+      <ViewKnowledgeDialog
+        open={showViewDialog}
+        onOpenChange={setShowViewDialog}
+        content={viewingContent}
+      />
+
       <AddKnowledgeDialog
         open={showTypeDialog}
         onOpenChange={setShowTypeDialog}

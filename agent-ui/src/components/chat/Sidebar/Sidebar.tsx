@@ -296,9 +296,15 @@ const Sidebar = () => {
                     </>
                   )}
                 </motion.div>
-                <Knowledge />
-                <Memory />
-                <Sessions />
+                {/* Scrollable content area for Knowledge, Memory, and Sessions */}
+                <div
+                  className="flex-1 space-y-5 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/20 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-primary/40"
+                  style={{ maxHeight: 'calc(100vh - 320px)' }}
+                >
+                  <Knowledge />
+                  <Memory />
+                  <Sessions />
+                </div>
               </>
             )}
           </>

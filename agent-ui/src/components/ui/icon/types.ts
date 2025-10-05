@@ -41,6 +41,7 @@ export type IconType =
   | 'globe'
   | 'text'
   | 'list'
+  | 'eye'
 
 export interface IconProps {
   type: IconType

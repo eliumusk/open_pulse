@@ -12,7 +12,7 @@ from config.settings import DATABASE_FILE
 from agno.knowledge import Knowledge
 from agno.vectordb.lancedb import LanceDb,SearchType
 from agno.db.sqlite import SqliteDb
-from agno.knowledge.embedder.cohere import CohereEmbedder
+from agno.knowledge.embedder.google import GeminiEmbedder
 
 import os
 OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
@@ -22,8 +22,8 @@ contents_db = SqliteDb(db_file="my_knowledge.db")
 vector_db = LanceDb(
     table_name="agno_docs",
     uri="tmp/lancedb",  
-    search_type=SearchType.hybrid,
-    embedder=CohereEmbedder(id="embed-v4.0"),
+    search_type=SearchType.vector,
+    embedder=GeminiEmbedder(),
 )
 knowledge = Knowledge(
     name="My Knowledge Base",

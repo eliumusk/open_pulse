@@ -40,7 +40,8 @@ import {
   File,
   Globe,
   Type,
-  List
+  List,
+  Eye
 } from 'lucide-react'
 
 import { PlusIcon } from '@radix-ui/react-icons'
@@ -85,5 +86,6 @@ export const ICONS: IconTypeMap = {
   file: File,
   globe: Globe,
   text: Type,
-  list: List
+  list: List,
+  eye: Eye
 }

@@ -24,6 +24,8 @@ export const APIRoutes = {
     `${agentOSUrl}/knowledge/content/${contentId}`,
   GetKnowledgeContentStatus: (agentOSUrl: string, contentId: string) =>
     `${agentOSUrl}/knowledge/content/${contentId}/status`,
+  DeleteKnowledgeContent: (agentOSUrl: string, contentId: string) =>
+    `${agentOSUrl}/knowledge/content/${contentId}`,
   GetMemories: (agentOSUrl: string) => `${agentOSUrl}/memories`,
   GetMemoryById: (agentOSUrl: string, memoryId: string) =>
     `${agentOSUrl}/memories/${memoryId}`,

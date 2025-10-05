@@ -57,7 +57,6 @@ const Memory = () => {
     setIsMemoriesLoading
   } = useStore()
 
-  const [isScrolling, setIsScrolling] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingMemory, setEditingMemory] = useState<MemoryType | null>(null)
@@ -207,20 +206,11 @@ const Memory = () => {
           </Button>
         )}
       </div>
-      <div
-        className={`max-h-[300px] overflow-y-auto font-geist transition-all duration-300 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:transition-opacity [&::-webkit-scrollbar]:duration-300 ${
-          isScrolling
-            ? '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-background [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:opacity-0'
-            : '[&::-webkit-scrollbar]:opacity-100'
-        }`}
-        onScroll={() => setIsScrolling(true)}
-        onMouseOver={() => setIsScrolling(true)}
-        onMouseLeave={() => setIsScrolling(false)}
-      >
+      <div className="font-geist">
         {!isEndpointActive || (!isMemoriesLoading && memories.length === 0) ? (
           <MemoryBlankState />
         ) : (
-          <div className="flex flex-col gap-y-1 pr-1">
+          <div className="flex flex-col gap-y-1">
             {memories.map((memory) => (
               <MemoryItem
                 key={memory.memory_id}

@@ -1,9 +1,12 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { KnowledgeContent } from '@/types/os'
 import { cn } from '@/lib/utils'
+import Icon from '@/components/ui/icon'
 
 interface KnowledgeItemProps {
   content: KnowledgeContent
+  onDelete: (contentId: string) => void
+  onView: (content: KnowledgeContent) => void
 }
 
 const getStatusIcon = (status: KnowledgeContent['status']) => {
@@ -36,17 +39,18 @@ const formatSize = (bytes?: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-const KnowledgeItem = ({ content }: KnowledgeItemProps) => {
+const KnowledgeItem = ({ content, onDelete, onView }: KnowledgeItemProps) => {
   const typeIcon = getTypeIcon(content.type)
   const statusIcon = getStatusIcon(content.status)
   const sizeStr = formatSize(content.size)
+  const [showDescription, setShowDescription] = useState(false)
 
   return (
     <div
       className={cn(
         'group relative mb-1 flex flex-col gap-1 rounded-lg px-3 py-2',
         'bg-background-secondary/50 hover:bg-background-secondary',
-        'transition-colors duration-200 cursor-default'
+        'transition-colors duration-200'
       )}
     >
       {/* Name row */}
@@ -56,10 +60,44 @@ const KnowledgeItem = ({ content }: KnowledgeItemProps) => {
           {content.name}
         </span>
         {statusIcon && <span className="text-xs">{statusIcon}</span>}
+
+        {/* Action buttons */}
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onView(content)}
+            className="rounded p-1 hover:bg-background-secondary/80 transition-colors"
+            title="View details"
+          >
+            <Icon type="eye" size="xs" className="text-muted hover:text-primary" />
+          </button>
+          <button
+            onClick={() => onDelete(content.id)}
+            className="rounded p-1 hover:bg-background-secondary/80 transition-colors"
+            title="Delete content"
+          >
+            <Icon type="trash" size="xs" className="text-muted hover:text-destructive" />
+          </button>
+        </div>
       </div>
 
+      {/* Description (if exists and expanded) */}
+      {content.description && (
+        <div className="pl-6">
+          {showDescription ? (
+            <p className="text-xs text-muted/80">{content.description}</p>
+          ) : (
+            <button
+              onClick={() => setShowDescription(true)}
+              className="text-xs text-muted/60 hover:text-primary transition-colors"
+            >
+              Show description
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Info row */}
-      <div className="flex items-center gap-2 text-xs text-muted">
+      <div className="flex items-center gap-2 text-xs text-muted pl-6">
         <span className="uppercase">{content.type}</span>
         {sizeStr && (
           <>
