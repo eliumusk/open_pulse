@@ -436,6 +436,7 @@ const useAIChatStreamHandler = () => {
       streamResponse,
       agentId,
       teamId,
+      workflowId,
       mode,
       setStreamingErrorMessage,
       setIsStreaming,

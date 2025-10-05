@@ -85,6 +85,10 @@ export const getSessionAPI = async (
   )
 
   if (!response.ok) {
+    // Return empty array for 404 (new session with no runs yet)
+    if (response.status === 404) {
+      return []
+    }
     throw new Error(`Failed to fetch session: ${response.statusText}`)
   }
 
