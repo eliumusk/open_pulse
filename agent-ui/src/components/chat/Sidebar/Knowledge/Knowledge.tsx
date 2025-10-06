@@ -12,9 +12,7 @@ import {
 
 import KnowledgeItem from './KnowledgeItem'
 import KnowledgeBlankState from './KnowledgeBlankState'
-import AddKnowledgeDialog from './AddKnowledgeDialog'
 import UploadFileDialog from './UploadFileDialog'
-import UploadTextDialog from './UploadTextDialog'
 import ViewKnowledgeDialog from './ViewKnowledgeDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -62,10 +60,7 @@ const Knowledge = () => {
     setIsKnowledgeLoading
   } = useStore()
 
-  const [showTypeDialog, setShowTypeDialog] = useState(false)
-  const [showFileDialog, setShowFileDialog] = useState(false)
-  const [showWebDialog, setShowWebDialog] = useState(false)
-  const [showTextDialog, setShowTextDialog] = useState(false)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [showViewDialog, setShowViewDialog] = useState(false)
   const [viewingContent, setViewingContent] = useState<KnowledgeContent | null>(null)
 
@@ -84,12 +79,15 @@ const Knowledge = () => {
     }
   }
 
-  // Handle file upload
-  const handleFileUpload = async (data: {
+  // Handle unified upload (file, URL, or text)
+  const handleUpload = async (data: {
     file?: File
     url?: string
+    text_content?: string
     name: string
     description: string
+    reader_id?: string
+    chunker?: string
   }) => {
     if (!selectedEndpoint || !dbId) {
       toast.error('No endpoint or database selected')
@@ -100,31 +98,11 @@ const Knowledge = () => {
       await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
         file: data.file,
         url: data.url,
+        text_content: data.text_content,
         name: data.name,
-        description: data.description
-      })
-      await reloadKnowledge()
-    } catch (error) {
-      // Error already handled in API function
-    }
-  }
-
-  // Handle text/web upload
-  const handleTextUpload = async (data: {
-    text: string
-    name: string
-    description: string
-  }, isWeb: boolean) => {
-    if (!selectedEndpoint || !dbId) {
-      toast.error('No endpoint or database selected')
-      return
-    }
-
-    try {
-      await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
-        [isWeb ? 'url' : 'text_content']: data.text,
-        name: data.name,
-        description: data.description
+        description: data.description,
+        reader_id: data.reader_id,
+        chunker: data.chunker
       })
       await reloadKnowledge()
     } catch (error) {
@@ -218,7 +196,7 @@ const Knowledge = () => {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => setShowTypeDialog(true)}
+            onClick={() => setShowUploadDialog(true)}
             className="h-6 px-2 text-xs hover:bg-background-secondary"
           >
             <Icon type="plus-icon" size="xs" />
@@ -251,38 +229,10 @@ const Knowledge = () => {
         content={viewingContent}
       />
 
-      <AddKnowledgeDialog
-        open={showTypeDialog}
-        onOpenChange={setShowTypeDialog}
-        onSelectType={(type) => {
-          if (type === 'file') {
-            setShowFileDialog(true)
-          } else if (type === 'web') {
-            setShowWebDialog(true)
-          } else if (type === 'text') {
-            setShowTextDialog(true)
-          }
-        }}
-      />
-
       <UploadFileDialog
-        open={showFileDialog}
-        onOpenChange={setShowFileDialog}
-        onUpload={handleFileUpload}
-      />
-
-      <UploadTextDialog
-        open={showWebDialog}
-        onOpenChange={setShowWebDialog}
-        onUpload={(data) => handleTextUpload(data, true)}
-        type="web"
-      />
-
-      <UploadTextDialog
-        open={showTextDialog}
-        onOpenChange={setShowTextDialog}
-        onUpload={(data) => handleTextUpload(data, false)}
-        type="text"
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+        onUpload={handleUpload}
       />
     </div>
   )

@@ -5,7 +5,7 @@ This agent runs autonomously to create personalized content
 from textwrap import dedent
 from agno.agent import Agent
 from agno.db.sqlite import SqliteDb
-from agno.models.openrouter import OpenRouter
+from agno.models.openai import OpenAIChat
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
 from agno.knowledge import Knowledge
@@ -13,8 +13,9 @@ from agno.vectordb.lancedb import LanceDb
 from agno.db.sqlite import SqliteDb
 from agno.vectordb.search import SearchType
 from agno.knowledge.embedder.google import GeminiEmbedder
+from agno.knowledge.embedder.openai import OpenAIEmbedder
 import os
-OPENROUTER_MODEL_ID = os.getenv("OPENROUTER_MODEL_ID")
+MODEL_ID = os.getenv("MODEL_ID")
 
 contents_db = SqliteDb(db_file="my_knowledge.db")
 
@@ -22,8 +23,8 @@ contents_db = SqliteDb(db_file="my_knowledge.db")
 vector_db = LanceDb(
     table_name="agno_docs",
     uri="tmp/lancedb",  
-    search_type=SearchType.vector,
-    embedder=GeminiEmbedder(),
+    search_type=SearchType.hybrid,
+    embedder=OpenAIEmbedder(),
 )
 
 knowledge = Knowledge(
@@ -55,7 +56,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Digest Agent",
-        model=OpenRouter(id=OPENROUTER_MODEL_ID),  # Use powerful model for content generation
+        model=OpenAIChat(id=MODEL_ID),  # Use powerful model for content generation
         description="An AI agent that analyzes user interests and generates personalized newsletter content.",
         instructions=dedent("""
             You are the Digest Agent for Open Pulse, responsible for generating personalized newsletters.
@@ -99,7 +100,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
         
         # Tools - will be added dynamically with MCP tools
         tools=[
-            ArxivTools(enable_search_arxiv=True, enable_read_arxiv_papers=False)
+            #ArxivTools(enable_search_arxiv=True, enable_read_arxiv_papers=False)
         ],
         
         # Enable markdown formatting
@@ -130,7 +131,7 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Research Agent",
-        model=OpenRouter(id=OPENROUTER_MODEL_ID),
+        model=OpenAIChat(id=MODEL_ID),
         description="An AI agent specialized in finding and extracting relevant information.",
         instructions=dedent("""
             You are a Research Agent specialized in finding high-quality information.
@@ -161,7 +162,7 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
         add_datetime_to_context=True,
         enable_user_memories=True,
         tools=[
-            ArxivTools(enable_search_arxiv=True, enable_read_arxiv_papers=False)
+            #ArxivTools(enable_search_arxiv=True, enable_read_arxiv_papers=False)
         ],
         markdown=True,
         debug_mode=False,

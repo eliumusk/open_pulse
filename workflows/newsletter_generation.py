@@ -129,7 +129,7 @@ def create_newsletter_workflow(db: SqliteDb = None) -> Workflow:
     )
 
     workflow = Workflow(
-        name="Simple Newsletter Workflow",
+        name="Old Newsletter Workflow",
         description="Simplified workflow: generate newsletter → create cover → save.",
         db=db,
         steps=[generate_step, cover_step, save_step],

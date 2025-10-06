@@ -205,6 +205,8 @@ export const uploadKnowledgeContentAPI = async (
     text_content?: string
     name: string
     description?: string
+    reader_id?: string
+    chunker?: string
   }
 ): Promise<KnowledgeContent> => {
   const apiUrl = new URL(APIRoutes.GetKnowledgeContent(endpoint))
@@ -222,6 +224,14 @@ export const uploadKnowledgeContentAPI = async (
     formData.append('url', data.url)
   } else if (data.text_content) {
     formData.append('text_content', data.text_content)
+  }
+
+  // Add advanced options if provided
+  if (data.reader_id) {
+    formData.append('reader_id', data.reader_id)
+  }
+  if (data.chunker) {
+    formData.append('chunker', data.chunker)
   }
 
   try {
