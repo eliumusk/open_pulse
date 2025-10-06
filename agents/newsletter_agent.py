@@ -15,21 +15,37 @@ from agno.db.sqlite import SqliteDb
 from agno.knowledge.embedder.google import GeminiEmbedder
 from agno.knowledge.embedder.openai import OpenAIEmbedder
 import os
+
+# Import custom reader registry
+from readers import register_all_readers
+
 MODEL_ID = os.getenv("MODEL_ID")
 
 contents_db = SqliteDb(db_file="my_knowledge.db")
 
 vector_db = LanceDb(
     table_name="agno_docs",
-    uri="tmp/lancedb",  
+    uri="tmp/lancedb",
     search_type=SearchType.hybrid,
     embedder=OpenAIEmbedder(),
 )
+
+# Create knowledge base
 knowledge = Knowledge(
     name="My Knowledge Base",
     vector_db=vector_db,
-    contents_db=contents_db 
+    contents_db=contents_db
 )
+
+# Register all custom readers
+reader_status = register_all_readers(knowledge)
+for reader_name, status in reader_status.items():
+    if status == "registered":
+        print(f"✅ Registered {reader_name}")
+    elif status.startswith("skipped"):
+        print(f"⚠️  {reader_name}: {status}")
+    else:
+        print(f"❌ {reader_name}: {status}")
 
 
 def create_newsletter_agent(db: SqliteDb = None) -> Agent:

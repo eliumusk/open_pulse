@@ -14,7 +14,11 @@ const getStatusIcon = (status: KnowledgeContent['status']) => {
     case 'completed':
       return <span className="text-green-500">✓</span>
     case 'processing':
-      return <span className="text-yellow-500">⏳</span>
+      return (
+        <span className="inline-block animate-spin text-yellow-500">
+          ⟳
+        </span>
+      )
     case 'failed':
       return <span className="text-red-500">✗</span>
     default:

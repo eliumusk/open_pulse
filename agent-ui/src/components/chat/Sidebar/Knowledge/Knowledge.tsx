@@ -7,7 +7,8 @@ import { useStore } from '@/store'
 import {
   getKnowledgeContentAPI,
   uploadKnowledgeContentAPI,
-  deleteKnowledgeContentAPI
+  deleteKnowledgeContentAPI,
+  getKnowledgeContentStatusAPI
 } from '@/api/os'
 
 import KnowledgeItem from './KnowledgeItem'
@@ -79,6 +80,52 @@ const Knowledge = () => {
     }
   }
 
+  // Poll content status until completed or failed
+  const pollContentStatus = async (contentId: string) => {
+    if (!selectedEndpoint || !dbId) return
+
+    const maxAttempts = 60 // 60 attempts * 2 seconds = 2 minutes max
+    let attempts = 0
+
+    const poll = async (): Promise<void> => {
+      try {
+        const statusResult = await getKnowledgeContentStatusAPI(
+          selectedEndpoint,
+          contentId,
+          dbId
+        )
+
+        if (statusResult.status === 'completed') {
+          toast.success('Content processed successfully')
+          await reloadKnowledge()
+          return
+        }
+
+        if (statusResult.status === 'failed') {
+          toast.error(
+            `Content processing failed: ${statusResult.status_message || 'Unknown error'}`
+          )
+          await reloadKnowledge()
+          return
+        }
+
+        // Still processing
+        attempts++
+        if (attempts < maxAttempts) {
+          setTimeout(() => poll(), 2000) // Poll every 2 seconds
+        } else {
+          toast.warning('Content processing is taking longer than expected')
+          await reloadKnowledge()
+        }
+      } catch (error) {
+        console.error('Error polling content status:', error)
+        await reloadKnowledge()
+      }
+    }
+
+    poll()
+  }
+
   // Handle unified upload (file, URL, or text)
   const handleUpload = async (data: {
     file?: File
@@ -95,7 +142,7 @@ const Knowledge = () => {
     }
 
     try {
-      await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
+      const result = await uploadKnowledgeContentAPI(selectedEndpoint, dbId, {
         file: data.file,
         url: data.url,
         text_content: data.text_content,
@@ -104,7 +151,14 @@ const Knowledge = () => {
         reader_id: data.reader_id,
         chunker: data.chunker
       })
+
+      // Immediately reload to show the new content with "processing" status
       await reloadKnowledge()
+
+      // Start polling for status updates
+      if (result.id) {
+        pollContentStatus(result.id)
+      }
     } catch (error) {
       // Error already handled in API function
     }

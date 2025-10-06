@@ -249,7 +249,7 @@ export const uploadKnowledgeContentAPI = async (
     }
 
     const result = await response.json()
-    toast.success('Content uploaded successfully')
+    toast.success('Content upload started')
     return result
   } catch (error) {
     if (error instanceof Error) {
@@ -257,6 +257,30 @@ export const uploadKnowledgeContentAPI = async (
     }
     toast.error('Error uploading content')
     throw new Error('Upload failed')
+  }
+}
+
+export const getKnowledgeContentStatusAPI = async (
+  endpoint: string,
+  contentId: string,
+  dbId: string
+): Promise<{ status: 'processing' | 'completed' | 'failed'; status_message?: string }> => {
+  const apiUrl = new URL(APIRoutes.GetKnowledgeContentStatus(endpoint, contentId))
+  apiUrl.searchParams.set('db_id', dbId)
+
+  try {
+    const response = await fetch(apiUrl.toString(), {
+      method: 'GET'
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to get content status')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error getting content status:', error)
+    throw error
   }
 }
 

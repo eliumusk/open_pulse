@@ -304,6 +304,7 @@ const UploadFileDialog = ({ open, onOpenChange, onUpload }: UploadFileDialogProp
                         <SelectItem value="JSONReader">JSON Reader</SelectItem>
                         <SelectItem value="MarkdownReader">Markdown Reader</SelectItem>
                         <SelectItem value="TextReader">Text Reader</SelectItem>
+                        <SelectItem value="JinaWebReader">Jina Web Reader (Recommended for URLs)</SelectItem>
                         <SelectItem value="WebsiteReader">Website Reader</SelectItem>
                         <SelectItem value="YouTubeReader">YouTube Reader</SelectItem>
                         <SelectItem value="ArxivReader">arXiv Reader</SelectItem>
