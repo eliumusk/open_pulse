@@ -55,7 +55,7 @@ Open Pulse 是一个基于 [Agno](https://github.com/agno-agi/agno) 框架构建
 ┌─────────────────────────────────────────────────────────────┐
 │                    Knowledge & Tools                        │
 │  • LanceDB (Vector Store)  • Custom Readers                 │
-│  • MCP Tools (Brave Search, Gmail, Arxiv)                          │
+│  • MCP Tools (Brave Search, Gmail, Arxiv)                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -338,8 +338,75 @@ memory_manager = create_memory_manager(
 
 ### 6. 定时任务
 
-Digest Agent 会定时生成新闻摘要，配置方式：
+Open Pulse 使用 `trigger_workflow.sh` 脚本配合 crontab 实现定时生成 Newsletter。
 
+#### 配置步骤
+
+**1. 编辑触发脚本**
+
+修改 `trigger_workflow.sh` 中的用户配置：
+
+```bash
+USER_ID="your_email@example.com"  # 你的邮箱
+INTERESTS="AI, quantum computing, space exploration"  # 你的兴趣
+```
+
+**2. 设置 crontab 定时任务**
+
+```bash
+# 编辑 crontab
+crontab -e
+
+# 添加定时任务（每天早上 8 点生成）
+0 8 * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
+
+# 或者每小时生成一次（测试用）
+0 * * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
+```
+
+**3. 查看定时任务**
+
+```bash
+# 查看当前的 crontab 任务
+crontab -l
+
+# 查看执行日志
+tail -f /data/muskliu/mt/open_pulse/logs/trigger_workflow_$(date +%F).log
+```
+
+#### Crontab 时间格式说明
+
+```
+# ┌───────────── 分钟 (0 - 59)
+# │ ┌───────────── 小时 (0 - 23)
+# │ │ ┌───────────── 日期 (1 - 31)
+# │ │ │ ┌───────────── 月份 (1 - 12)
+# │ │ │ │ ┌───────────── 星期 (0 - 7，0 和 7 都代表周日)
+# │ │ │ │ │
+# * * * * * 要执行的命令
+
+# 常用示例：
+0 8 * * *     # 每天早上 8:00
+0 */2 * * *   # 每 2 小时
+30 9 * * 1-5  # 周一到周五 9:30
+0 0 1 * *     # 每月 1 号 0:00
+```
+
+#### 前端通知
+
+当 workflow 完成后，前端会自动弹出通知卡片：
+- 打开浏览器访问 http://localhost:3000
+- 右下角会显示通知卡片
+- 点击 "View Full Newsletter" 查看完整内容
+- 点击 "Dismiss" 关闭通知
+
+#### 手动触发
+
+也可以手动运行脚本立即生成：
+
+```bash
+./trigger_workflow.sh
+```
 
 ---
 
@@ -594,7 +661,23 @@ memory_manager = create_chat_history_memory_manager(db)
 
 ### Q: 如何修改定时任务的时间？
 
-A: 
+A: 编辑 crontab 配置：
+
+```bash
+# 编辑定时任务
+crontab -e
+
+# 修改时间（例如改为每天下午 6 点）
+0 18 * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
+
+# 保存并退出（vim: 按 ESC，输入 :wq）
+```
+
+常用时间配置：
+- `0 8 * * *` - 每天早上 8:00
+- `0 12,18 * * *` - 每天 12:00 和 18:00
+- `0 */6 * * *` - 每 6 小时一次
+- `0 9 * * 1-5` - 周一到周五 9:00
 
 ### Q: 支持哪些 LLM？
 

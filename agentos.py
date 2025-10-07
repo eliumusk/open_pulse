@@ -311,6 +311,7 @@ agent_os = AgentOS(
     workflows=[newsletter_workflow, simple_workflow],  
     base_app=custom_app,  # Pass our custom app
     enable_mcp_server=True,
+    on_route_conflict="preserve_base_app",  # Skip conflicting AgentOS routes, keep your custom routes
 )
 
 # Get the combined app (custom_app + AgentOS routes)
@@ -335,4 +336,3 @@ if __name__ == "__main__":
         port=AGENTOS_PORT,
         reload=True,
     )
-
