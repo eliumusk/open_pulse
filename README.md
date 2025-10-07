@@ -358,10 +358,10 @@ INTERESTS="AI, quantum computing, space exploration"  # 你的兴趣
 crontab -e
 
 # 添加定时任务（每天早上 8 点生成）
-0 8 * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
+0 8 * * * trigger_workflow.sh
 
-# 或者每小时生成一次（测试用）
-0 * * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
+# 或者每2分钟生成一次（测试用）
+*/2 * * * * trigger_workflow.sh
 ```
 
 **3. 查看定时任务**
@@ -371,7 +371,7 @@ crontab -e
 crontab -l
 
 # 查看执行日志
-tail -f /data/muskliu/mt/open_pulse/logs/trigger_workflow_$(date +%F).log
+tail -f logs/trigger_workflow_$(date +%F).log
 ```
 
 #### Crontab 时间格式说明
