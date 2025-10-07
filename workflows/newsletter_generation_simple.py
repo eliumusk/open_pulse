@@ -3,6 +3,7 @@ from datetime import datetime
 from textwrap import dedent
 from pathlib import Path
 import uuid
+import asyncio
 from google import genai
 from agno.media import Image
 from agno.workflow import Workflow, Step, Parallel
@@ -10,6 +11,7 @@ from agno.workflow.types import StepInput, StepOutput
 from agno.db.sqlite import SqliteDb
 from agents import create_digest_agent, create_research_agent
 from config.settings import DATABASE_FILE, GOOGLE_API_KEY, IMAGES_DIR, AGENTOS_HOST, AGENTOS_PORT
+from workflows.notification_manager import get_notification_manager
 
 def generate_cover_image(step_input: StepInput) -> StepOutput:
     """Generate a cover image for the newsletter using Google Gemini and save to filesystem"""
@@ -74,13 +76,22 @@ def generate_cover_image(step_input: StepInput) -> StepOutput:
 
 
 def save_newsletter(step_input: StepInput) -> StepOutput:
-    """Save the generated newsletter with optional cover image"""
+    """Save the generated newsletter with optional cover image and send notification"""
     user_id = (step_input.additional_data or {}).get("user_id", "default")
+    session_id = (step_input.additional_data or {}).get("session_id", "")
+    run_id = (step_input.additional_data or {}).get("run_id", "")
+    enable_notification = (step_input.additional_data or {}).get("enable_notification", False)
+
     newsletter_content = step_input.previous_step_content or step_input.input
     newsletter_id = f"newsletter_{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     has_cover = hasattr(step_input, "images") and step_input.images
     cover_status = "✅ With cover image" if has_cover else "⚠️ No cover image"
+
+    # Extract cover image URL if available
+    cover_image_url = None
+    if has_cover and step_input.images:
+        cover_image_url = step_input.images[0].url if hasattr(step_input.images[0], 'url') else None
 
     final_output = dedent(f"""
         ✅ Newsletter Generated Successfully!
@@ -92,11 +103,36 @@ def save_newsletter(step_input: StepInput) -> StepOutput:
 
         {newsletter_content}
 
-     
+
     """).strip()
 
     print(f"💾 Saved newsletter {newsletter_id} ({cover_status})")
-    return StepOutput(content=final_output, success=True)
+
+    # Send notification if enabled
+    if enable_notification and run_id:
+        print(f"📬 Sending notification for run {run_id}")
+        notification_manager = get_notification_manager()
+
+        # Use asyncio to send notification (workflow executor handles async)
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(
+                notification_manager.notify_workflow_completion(
+                    run_id=run_id,
+                    status="completed",
+                    content=newsletter_content,
+                    cover_image_url=cover_image_url,
+                )
+            )
+        except Exception as e:
+            print(f"⚠️  Failed to send notification: {e}")
+
+    # Pass images through to final output
+    return StepOutput(
+        content=final_output,
+        images=step_input.images if has_cover else None,
+        success=True
+    )
 
 
 def create_simple_newsletter_workflow(db: SqliteDb = None) -> Workflow:

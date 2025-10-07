@@ -18,15 +18,29 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/trigger_workflow_$(date +%F).log"
 
 # ========================
-# 触发 Workflow
+# 健康检查
 # ========================
+echo "🔍 Checking AgentOS health..."
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://$AGENTOS_HOST:$AGENTOS_PORT/health")
+
+if [ "$STATUS" -ne 200 ]; then
+    echo "❌ AgentOS is not running (HTTP $STATUS)"
+    echo "   Please start it with: python agentos.py"
+    exit 1
+fi
+echo "✅ AgentOS is running"
+echo ""
+
+# ========================
+# 触发 Workflow（使用通知端点）
+# ========================
+echo "🚀 Triggering newsletter workflow..."
 RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "http://$AGENTOS_HOST:$AGENTOS_PORT/workflows/$WORKFLOW_ID/runs" \
+  "http://$AGENTOS_HOST:$AGENTOS_PORT/api/workflows/$WORKFLOW_ID/run-with-notification" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data-urlencode "message=Generate a newsletter about $INTERESTS" \
   --data-urlencode "user_id=$USER_ID" \
-  --data-urlencode "session_id=$SESSION_ID" \
-  --data-urlencode "stream=false")
+  --data-urlencode "session_id=$SESSION_ID")
 
 # 分离响应体和状态码
 HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
@@ -48,13 +62,16 @@ fi
 # 输出状态信息
 if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 202 ]; then
     echo "✅ Workflow triggered successfully (HTTP $HTTP_CODE)"
-    RUN_ID=$(echo "$HTTP_BODY" | jq -r '.run_id' 2>/dev/null)
-    if [ "$RUN_ID" != "null" ] && [ -n "$RUN_ID" ]; then
-        echo "📋 Run ID: $RUN_ID"
-        echo "💡 Check status at: http://$AGENTOS_HOST:$AGENTOS_PORT/workflows/$WORKFLOW_ID/runs/$RUN_ID"
-    fi
+    echo "📬 Notification will be sent to frontend when workflow completes"
+    echo "   Open http://localhost:3000 to see the notification"
 else
     echo "❌ Failed to trigger Workflow (HTTP $HTTP_CODE)"
 fi
 
 } >> "$LOG_FILE" 2>&1
+
+# 同时输出到控制台
+echo ""
+echo "✅ Workflow triggered and logged to: $LOG_FILE"
+echo "📬 Notification will appear in frontend when complete (~30-60s)"
+echo "💡 Check backend logs for workflow progress"
