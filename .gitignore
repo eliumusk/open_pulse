@@ -38,3 +38,5 @@ open_pulse.db
 # LanceDB
 lancedb/
 
+zk/
+logs/
