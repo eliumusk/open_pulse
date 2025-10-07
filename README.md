@@ -358,10 +358,10 @@ INTERESTS="AI, quantum computing, space exploration"  # 你的兴趣
 crontab -e
 
 # 添加定时任务（每天早上 8 点生成）
-0 8 * * * trigger_workflow.sh
+0 8 * * *  /bin/bash trigger_workflow.sh
 
 # 或者每2分钟生成一次（测试用）
-*/2 * * * * trigger_workflow.sh
+*/2 * * * * /bin/bash trigger_workflow.sh
 ```
 
 **3. 查看定时任务**
