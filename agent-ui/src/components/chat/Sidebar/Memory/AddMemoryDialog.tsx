@@ -108,6 +108,7 @@ const AddMemoryDialog = ({ open, onOpenChange, onSubmit }: AddMemoryDialogProps)
             Cancel
           </Button>
           <Button
+            variant="outline"
             onClick={handleSubmit}
             disabled={isSubmitting || !memory.trim()}
             className="uppercase"

@@ -9,6 +9,7 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
+from config.memory_config import create_newsletter_memory_manager
 from agno.knowledge import Knowledge
 from agno.vectordb.lancedb import LanceDb,SearchType
 from agno.db.sqlite import SqliteDb
@@ -99,6 +100,7 @@ def create_newsletter_agent(db: SqliteDb = None) -> Agent:
         # Enable memory to remember user preferences
         db=db,
         knowledge=knowledge,
+        memory_manager=create_newsletter_memory_manager(db),  # Use custom memory configuration
         enable_user_memories=True,
         enable_agentic_memory=True,  # Let the agent manage its own memories
         
