@@ -189,7 +189,7 @@ def create_digest_memory_manager(db: SqliteDb) -> MemoryManager:
     )
 
 
-def create_chat_history_memory_manager(db: SqliteDb) -> MemoryManager:
+def create_wechat_history_memory_manager(db: SqliteDb) -> MemoryManager:
     """
     Create a memory manager optimized for processing uploaded chat histories.
 
@@ -229,7 +229,7 @@ __all__ = [
     'create_memory_manager',
     'create_newsletter_memory_manager',
     'create_digest_memory_manager',
-    'create_chat_history_memory_manager',
+    'create_wechat_history_memory_manager',
     'MEMORY_EXTRACTION_RULES',
     'WECHAT_HISTORY_EXTRACTION_RULES',
 ]
