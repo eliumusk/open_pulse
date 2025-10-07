@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 
-from agents import create_newsletter_agent, create_digest_agent, create_research_agent
+from agents import create_newsletter_agent, create_digest_agent, create_research_agent, create_social_agent
 from workflows import create_newsletter_workflow, create_simple_newsletter_workflow
 from workflows.notification_manager import get_notification_manager
 from config.settings import (
@@ -307,12 +307,10 @@ def create_custom_endpoints(app: FastAPI, agent_os_instance: AgentOS):
 agent_os = AgentOS(
     id="open-pulse-os",
     description="Open Pulse - Your personalized AI newsletter service",
-    agents=[newsletter_agent, digest_agent, research_agent],
-    workflows=[newsletter_workflow, simple_workflow],
-    base_app=custom_app,  # Pass our custom app
-    enable_mcp_server=True,
     agents=[newsletter_agent, digest_agent, research_agent, social_agent],
     workflows=[newsletter_workflow, simple_workflow],  
+    base_app=custom_app,  # Pass our custom app
+    enable_mcp_server=True,
 )
 
 # Get the combined app (custom_app + AgentOS routes)
@@ -323,30 +321,6 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Add custom endpoints to the app
 create_custom_endpoints(app, agent_os)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize MCP tools on startup"""
-    print("🔧 Initializing MCP tools...")
-    mcp_tools = await initialize_mcp_tools()
-    
-    if mcp_tools:
-        # Add MCP tools to all agents
-        add_mcp_tools_to_agent(newsletter_agent, mcp_tools)
-        add_mcp_tools_to_agent(digest_agent, mcp_tools)
-        add_mcp_tools_to_agent(research_agent, mcp_tools)
-        print("✅ MCP tools added to all agents")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up MCP tools on shutdown"""
-    global mcp_tools_instance
-    if mcp_tools_instance:
-        from tools import close_mcp_tools
-        await close_mcp_tools(mcp_tools_instance)
-        print("✅ MCP tools closed")
 
 
 if __name__ == "__main__":
