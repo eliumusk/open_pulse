@@ -8,6 +8,7 @@ from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
+from config.memory_config import create_digest_memory_manager
 from agno.knowledge import Knowledge
 from agno.vectordb.lancedb import LanceDb
 from agno.db.sqlite import SqliteDb
@@ -107,6 +108,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
         # Database for storing digest sessions
         db=db,
         knowledge=knowledge,
+        memory_manager=create_digest_memory_manager(db),  # Use custom memory configuration
         # Don't need to create new memories, just read existing ones
         enable_user_memories=True,
         

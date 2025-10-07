@@ -23,7 +23,6 @@ from config.settings import (
     STATIC_DIR,
     validate_settings,
 )
-from tools import get_mcp_tools
 
 
 # Validate settings on startup
@@ -41,42 +40,15 @@ db = SqliteDb(
     db_file=DATABASE_FILE,
 )
 
-# Global MCP tools instance
-mcp_tools_instance = None
-
-
-async def initialize_mcp_tools():
-    """Initialize MCP tools asynchronously"""
-    global mcp_tools_instance
-    if mcp_tools_instance is None:
-        try:
-            mcp_tools_instance = await get_mcp_tools()
-            print("✅ MCP tools initialized successfully")
-        except Exception as e:
-            print(f"⚠️  Warning: Could not initialize MCP tools: {e}")
-            print("   Agents will work with limited tools (Arxiv only)")
-    return mcp_tools_instance
-
-
-def add_mcp_tools_to_agent(agent, mcp_tools):
-    """Add MCP tools to an agent if available"""
-    if mcp_tools:
-        # Add MCP tools to existing tools
-        if not hasattr(agent, 'tools') or agent.tools is None:
-            agent.tools = []
-        agent.tools.append(mcp_tools)
-    return agent
-
 
 # Create agents
-print("🚀 Creating agents...")
 newsletter_agent = create_newsletter_agent(db=db)
 digest_agent = create_digest_agent(db=db)
 research_agent = create_research_agent(db=db)
+social_agent = create_social_agent(db=db)
 print("✅ Agents created successfully")
 
 # Create workflows
-print("🔄 Creating workflows...")
 newsletter_workflow = create_newsletter_workflow(db=db)
 simple_workflow = create_simple_newsletter_workflow(db=db)
 print("✅ Workflows created successfully")
@@ -339,6 +311,8 @@ agent_os = AgentOS(
     workflows=[newsletter_workflow, simple_workflow],
     base_app=custom_app,  # Pass our custom app
     enable_mcp_server=True,
+    agents=[newsletter_agent, digest_agent, research_agent, social_agent],
+    workflows=[newsletter_workflow, simple_workflow],  
 )
 
 # Get the combined app (custom_app + AgentOS routes)
@@ -377,18 +351,8 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     print(f"""
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║                    🌟 Open Pulse AgentOS 🌟                  ║
-║                                                              ║
-║  Your personalized AI newsletter service                    ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-
 📍 Server starting on: http://{AGENTOS_HOST}:{AGENTOS_PORT}
 📚 API Documentation: http://{AGENTOS_HOST}:{AGENTOS_PORT}/docs
-🔌 MCP Server: http://{AGENTOS_HOST}:{AGENTOS_PORT}/mcp
-
 """)
     
     agent_os.serve(
