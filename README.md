@@ -1,8 +1,8 @@
 # 🌟 Open Pulse
 
-> 你的个性化 AI 新闻简报服务
+> Your personalized AI newsletter service
 
-Open Pulse 是一个基于 [Agno](https://github.com/agno-agi/agno) 框架构建的智能新闻简报应用。它通过对话学习你的兴趣，自动搜索和整理相关内容，并生成个性化的新闻摘要。
+Open Pulse is an intelligent newsletter application built on the [Agno](https://github.com/agno-agi/agno) framework. It learns your interests through conversation, automatically searches and curates relevant content, and generates personalized news summaries.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -10,28 +10,27 @@ Open Pulse 是一个基于 [Agno](https://github.com/agno-agi/agno) 框架构建
 
 ---
 
-## ✨ 功能特色
+## ✨ Features
 
-### 🤖 智能对话
-- **对话式学习**：与 Newsletter Agent 聊天，自然地分享你的兴趣和偏好
-- **持久记忆**：系统会记住你的偏好，并在不同会话间保持上下文
-- **智能提取**：使用自定义 Memory Manager 提取高质量的用户偏好
+### 🤖 Conversational Intelligence
+- Conversational learning: Chat with the Newsletter Agent to naturally share your interests and preferences
+- Persistent memory: The system remembers your preferences and maintains context across sessions
+- Intelligent extraction: Extracts high-quality user preferences using a custom Memory Manager
 
-### 📚 知识管理
-- **多源导入**：支持上传文件、URL、纯文本内容
-- **自定义 Reader**：内置 Jina Web Reader，完美解析网页内容
-- **灵活分块**：支持 8 种 chunking 策略（Fixed Size, Semantic, Agentic 等）
-- **向量检索**：使用 LanceDB 进行高效的语义搜索
+### 📚 Knowledge Management
+- Multi-source import: Supports uploading files, URLs, and plain text
+- Custom Reader: Built-in Jina Web Reader for perfect web content parsing
+- Flexible chunking: 8 chunking strategies (Fixed Size, Semantic, Agentic, etc.)
+- Vector search: Efficient semantic search powered by LanceDB
 
-### 🎯 个性化内容
-- **自动生成**：Digest Agent 根据你的兴趣自动搜索和整理内容
-- **定时推送**：可配置的定时任务，每日生成新闻摘要
-- **多模态支持**：支持文本、图片、视频等多种内容类型
-
+### 🎯 Personalized Content
+- Auto-generation: Digest Agent automatically searches and curates content based on your interests
+- Scheduled delivery: Configurable cron jobs to generate daily digests
+- Multimodal support: Supports text, images, videos, and more
 
 ---
 
-## 🏗️ 架构概览
+## 🏗️ Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -61,14 +60,14 @@ Open Pulse 是一个基于 [Agno](https://github.com/agno-agi/agno) 框架构建
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 前置条件
+### Prerequisites
 
-- **Python 3.11+**
-- **Node.js 18+** 和 npm/pnpm
-- **API Keys**：
-  - OpenAI API Key（推荐）或 OpenRouter
+- Python 3.11+
+- Node.js 18+ and npm/pnpm
+- API Keys:
+  - OpenAI API Key (recommended) or OpenRouter
   - Jina API Key
   - GOOGLE_API_KEY
   - GOOGLE_CLIENT_ID=your_client_id_here
@@ -76,258 +75,259 @@ Open Pulse 是一个基于 [Agno](https://github.com/agno-agi/agno) 框架构建
   - GOOGLE_PROJECT_ID=your_project_id_here
   - GOOGLE_REDIRECT_URI=http://localhost  # Default value
 
-### 后端部署
+### Backend Deployment
 
-#### 1. 克隆仓库
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/eliumusk/open_pulse.git
 cd open-pulse
 ```
 
-#### 2. 创建虚拟环境
+#### 2. Create a virtual environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 ```
 
-#### 3. 安装依赖
+#### 3. Install dependencies
 
-使用 uv（推荐）：
+Using uv (recommended):
 ```bash
 uv sync
 ```
 
-或使用 pip：
+Or using pip:
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 4. 配置环境变量
+#### 4. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，填入必需的 API Keys：
+Edit the `.env` file and fill in the required API Keys:
 
 ```bash
-# 必需：至少配置一个 LLM API Key
+# Required: configure at least one LLM API key
 OPENAI_API_KEY=sk-...
 
-# 推荐：用于网页解析（免费）
-JINA_API_KEY=jina_...  # 从 https://jina.ai/reader 获取
+# Recommended: for web parsing (free)
+JINA_API_KEY=jina_...  # Get from https://jina.ai/reader
 
 
-# 数据库配置
+# Database configuration
 DATABASE_URL=sqlite:///./open_pulse.db
 
-# AgentOS 配置
+# AgentOS configuration
 AGENTOS_PORT=7777
 AGENTOS_HOST=0.0.0.0
 ```
 
-#### 5. 启动 AgentOS
+#### 5. Start AgentOS
 
 ```bash
 python agentos.py
 ```
 
-你应该看到：
+You should see:
 ```
 ✅ Registered JinaWebReader to knowledge.readers and ReaderFactory
 INFO:     Started server process
 INFO:     Uvicorn running on http://0.0.0.0:7777
 ```
 
-#### 6. 访问后端服务
+#### 6. Access backend services
 
-- **API 文档**：http://localhost:7777/docs
-- **健康检查**：http://localhost:7777/health
+- API Docs: http://localhost:7777/docs
+- Health Check: http://localhost:7777/health
 
-### 前端部署
+### Frontend Deployment
 
-#### 1. 进入前端目录
+#### 1. Go to the frontend directory
 
 ```bash
 cd agent-ui
 ```
 
-#### 2. 安装依赖
+#### 2. Install dependencies
 
-使用 npm：
+Using npm:
 ```bash
 npm install
 ```
 
 
-#### 3. 启动开发服务器
+#### 3. Start the development server
 
 ```bash
 npm run dev
 ```
 
-#### 4. 访问前端应用
+#### 4. Visit the frontend app
 
-打开浏览器访问：http://localhost:3000
+Open your browser and go to: http://localhost:3000
 
 ---
 
-## 📖 使用指南
+## 📖 Usage Guide
 
-### 1. 与 Newsletter Agent 对话
+### 1. Chat with the Newsletter Agent
 
-首次使用时，Newsletter Agent 会与你对话，了解你的兴趣：
+On first use, the Newsletter Agent will chat with you to learn your interests:
 
 ```
-Agent: 你好！我是 Open Pulse 的 Newsletter Agent。我想了解一下你感兴趣的话题，
-       这样我就能为你生成个性化的新闻摘要。你最近在关注什么领域呢？
+Agent: Hi! I'm the Newsletter Agent of Open Pulse. I'd like to learn about the topics
+       you're interested in so I can generate personalized digests for you.
+       What areas have you been following recently?
 
-User: 我是一个软件工程师，对分布式系统、数据库内核、AI 基础设施比较感兴趣。
+User: I'm a software engineer, interested in distributed systems, database internals,
+      and AI infrastructure.
 
-Agent: 太好了！分布式系统和数据库内核都是很有深度的领域。你更喜欢技术深度文章，
-       还是行业动态和新闻？
+Agent: Awesome! Distributed systems and database internals are deep areas.
+       Do you prefer deep technical articles, or industry news and updates?
 
-User: 我更喜欢技术深度文章，最好是有源码分析或者架构设计的那种。
+User: I prefer deep technical articles, ideally with source code analysis or
+      architecture design.
 ```
 
-**系统会自动记住**：
-- ✅ 用户是软件工程师
-- ✅ 对分布式系统、数据库内核、AI 基础设施感兴趣
-- ✅ 偏好技术深度文章，喜欢源码分析和架构设计
+The system will automatically remember:
+- ✅ The user is a software engineer
+- ✅ Interested in distributed systems, database internals, and AI infrastructure
+- ✅ Prefers deep technical articles, likes source code analysis and architecture design
 
-### 2. 导入知识内容
+### 2. Import knowledge content
 
-Open Pulse 支持三种方式导入内容到知识库：
+Open Pulse supports three ways to import content into the knowledge base:
 
-#### 方式 1：上传文件
+#### Method 1: Upload files
 
-支持的文件类型：
-- 📄 PDF（`.pdf`）
-- 📊 CSV（`.csv`）
-- 📝 Markdown（`.md`）
-- 📋 JSON（`.json`）
-- 📃 纯文本（`.txt`）
+Supported file types:
+- 📄 PDF (.pdf)
+- 📊 CSV (.csv)
+- 📝 Markdown (.md)
+- 📋 JSON (.json)
+- 📃 Plain text (.txt)
 
-**操作步骤**：
-1. 点击左侧 "Knowledge" 面板
-2. 点击 "Add" 按钮
-3. 选择 "File" 标签
-4. 拖拽或选择文件
-5. （可选）展开 "Advanced Options" 选择 Reader 和 Chunking 策略
-6. 点击 "Upload"
+Steps:
+1. Click the "Knowledge" panel on the left
+2. Click the "Add" button
+3. Select the "File" tab
+4. Drag-and-drop or select files
+5. (Optional) Expand "Advanced Options" to choose Reader and Chunking strategy
+6. Click "Upload"
 
-**高级选项**：
-- **Reader Type**：选择特定的文件解析器（通常选 Auto-detect 即可）
-- **Chunking Strategy**：
-  - `Fixed Size`：固定大小分块（适合长文档）
-  - `Semantic`：语义分块（保持语义完整性）
-  - `Agentic`：AI 驱动的智能分块（最佳质量，但较慢）
-  - `Markdown`：按 Markdown 结构分块
-  - `Document`：文档切分专用
+Advanced options:
+- Reader Type: Select a specific file parser (Auto-detect is usually fine)
+- Chunking Strategy:
+  - Fixed Size: Fixed-size chunks (suitable for long documents)
+  - Semantic: Semantic chunking (preserves semantic coherence)
+  - Agentic: AI-driven intelligent chunking (best quality, slower)
+  - Markdown: Chunk by Markdown structure
+  - Document: Document-specific chunking
 
-#### 方式 2：导入 URL
+#### Method 2: Import URL
 
-支持的 URL 类型：
-- 🌐 网页文章
-- 📺 YouTube 视频
-- 📚 Wikipedia 页面
-- 🔬 arXiv 论文
-- 🔍 Web 搜索结果
+Supported URL types:
+- 🌐 Web articles
+- 📺 YouTube videos
+- 📚 Wikipedia pages
+- 🔬 arXiv papers
+- 🔍 Web search results
 
-**操作步骤**：
-1. 点击 "Add" → "URL" 标签
-2. 输入 URL（如 `https://example.com/article`）
-3. 输入内容名称和描述
-4. **重要**：展开 "Advanced Options"，选择 **"Jina Web Reader (Recommended for URLs)"**
-5. 点击 "Upload"
+Steps:
+1. Click "Add" → "URL" tab
+2. Enter the URL (e.g., https://example.com/article)
+3. Enter a content name and description
+4. Important: Expand "Advanced Options" and select "Jina Web Reader (Recommended for URLs)"
+5. Click "Upload"
 
-**为什么选择 Jina Web Reader？**
-- ✅ 完美解析复杂网页（包括微信公众号、Medium 等）
-- ✅ 自动提取正文内容，过滤广告和导航
-- ✅ 转换为 LLM 友好的 Markdown 格式
+Why choose Jina Web Reader?
+- ✅ Perfectly parses complex pages (including WeChat Official Accounts, Medium, etc.)
+- ✅ Automatically extracts main content and filters ads/navigation
+- ✅ Converts to LLM-friendly Markdown
 
+#### Method 3: Paste text
 
+Paste text directly:
 
-#### 方式 3：粘贴文本
+Steps:
+1. Click "Add" → "Text" tab
+2. Paste or enter text
+3. Enter a content name and description
+4. Click "Upload"
 
-直接粘贴文本内容：
+Use cases:
+- 📋 Copied article excerpts
+- 💬 Chat logs
+- 📝 Notes and summaries
+- 🔖 Bookmarks and citations
 
-**操作步骤**：
-1. 点击 "Add" → "Text" 标签
-2. 粘贴或输入文本内容
-3. 输入内容名称和描述
-4. 点击 "Upload"
+### 3. View processing status
 
-**适用场景**：
-- 📋 复制的文章片段
-- 💬 聊天记录
-- 📝 笔记和摘要
-- 🔖 书签和引用
+After upload, the system will automatically process the content:
 
-### 3. 查看处理状态
+- ⟳ Processing (yellow spinning icon): Parsing and vectorizing
+- ✓ Completed (green check): Successfully added to the knowledge base
+- ✗ Failed (red cross): Processing failed; click to view error details
 
-上传后，系统会自动处理内容：
+Auto-refresh: The frontend polls every 2 seconds; no manual refresh needed.
 
-- ⟳ **处理中**（黄色旋转图标）：正在解析和向量化
-- ✓ **完成**（绿色对勾）：已成功添加到知识库
-- ✗ **失败**（红色叉号）：处理失败，点击查看错误信息
+### 4. Use the knowledge base
 
-**状态自动刷新**：前端每 2 秒自动轮询一次，无需手动刷新。
+Imported content is automatically used for:
 
-### 4. 使用知识库
+1. Conversation augmentation: Agents can cite knowledge base content to answer questions
+2. Content generation: Digest Agent generates newsletters using the knowledge base
+3. Semantic search: Find relevant content via vector search
 
-导入的内容会自动用于：
-
-1. **对话增强**：Agent 可以引用知识库中的内容回答问题
-2. **内容生成**：Digest Agent 会基于知识库生成新闻摘要
-3. **语义搜索**：通过向量检索找到相关内容
-
-**示例对话**：
+Example conversation:
 ```
-User: 我刚才上传的那篇关于 Raft 算法的文章，能总结一下核心思想吗？
+User: The article about the Raft algorithm I just uploaded — could you summarize the core ideas?
 
-Agent: [检索知识库] 根据你上传的文章，Raft 算法的核心思想包括：
-       1. Leader Election：通过随机超时机制选举 Leader
-       2. Log Replication：Leader 负责接收客户端请求并复制到 Followers
-       3. Safety：确保已提交的日志不会丢失
+Agent: [Retrieve from knowledge base] Based on the article you uploaded, the core ideas of Raft include:
+       1. Leader Election: Elect a leader using randomized timeouts
+       2. Log Replication: The leader receives client requests and replicates them to followers
+       3. Safety: Ensures committed logs are never lost
        ...
 ```
 
-### 5. 管理 Memory
+### 5. Manage Memory
 
-系统会自动提取和存储你的偏好，你可以：
+The system automatically extracts and stores your preferences. You can:
 
-**查看 Memories**：
-- 通过 API：`GET http://localhost:7777/memories?user_id=your_user_id`
-- 通过数据库：查看 `open_pulse.db` 中的 `memories` 表
+View Memories:
+- Via API: GET http://localhost:7777/memories?user_id=your_user_id
+- Via database: View the memories table in open_pulse.db
 
-**Memory 提取规则**：
-系统使用自定义的 Memory Manager，遵循以下规则：
+Memory extraction rules:
+The system uses a custom Memory Manager with the following rules:
 
-✅ **会存储**：
-- 用户兴趣和偏好
-- 内容类型偏好
-- 阅读习惯
-- 专业背景
-- 学习目标
+✅ Will store:
+- User interests and preferences
+- Content type preferences
+- Reading habits
+- Professional background
+- Learning goals
 
-❌ **不会存储**：
-- 敏感个人信息（姓名、地址等）
-- 临时性请求
-- 系统指令
-- 冗余信息
+❌ Will NOT store:
+- Sensitive personal information (name, address, etc.)
+- Temporary requests
+- System instructions
+- Redundant information
 
-**自定义 Memory 配置**：
-如果需要修改 Memory 提取规则，编辑 `config/memory_config.py`：
+Custom Memory configuration:
+If you need to modify memory extraction rules, edit config/memory_config.py:
 
 ```python
-# 添加自定义规则
+# Add custom rules
 additional_instructions = """
-- 特别关注用户的技术栈偏好
-- 记录用户对特定公司或产品的兴趣
-- 追踪用户的学习进度
+- Pay special attention to the user's tech stack preferences
+- Record user interest in specific companies or products
+- Track the user's learning progress
 """
 
 memory_manager = create_memory_manager(
@@ -336,73 +336,73 @@ memory_manager = create_memory_manager(
 )
 ```
 
-### 6. 定时任务
+### 6. Scheduled tasks
 
-Open Pulse 使用 `trigger_workflow.sh` 脚本配合 crontab 实现定时生成 Newsletter。
+Open Pulse uses the trigger_workflow.sh script with crontab to schedule newsletter generation.
 
-#### 配置步骤
+Configuration steps
 
-**1. 编辑触发脚本**
+1. Edit the trigger script
 
-修改 `trigger_workflow.sh` 中的用户配置：
+Modify user configuration in trigger_workflow.sh:
 
 ```bash
-USER_ID="your_email@example.com"  # 你的邮箱
-INTERESTS="AI, quantum computing, space exploration"  # 你的兴趣
+USER_ID="your_email@example.com"  # Your email
+INTERESTS="AI, quantum computing, space exploration"  # Your interests
 ```
 
-**2. 设置 crontab 定时任务**
+2. Set up the crontab job
 
 ```bash
-# 编辑 crontab
+# Edit crontab
 crontab -e
 
-# 添加定时任务（每天早上 8 点生成）
+# Add a scheduled task (generate every day at 8 AM)
 0 8 * * *  /bin/bash trigger_workflow.sh
 
-# 或者每2分钟生成一次（测试用）
+# Or every 2 minutes (for testing)
 */2 * * * * /bin/bash trigger_workflow.sh
 ```
 
-**3. 查看定时任务**
+3. View scheduled tasks
 
 ```bash
-# 查看当前的 crontab 任务
+# View current crontab jobs
 crontab -l
 
-# 查看执行日志
+# View execution logs
 tail -f logs/trigger_workflow_$(date +%F).log
 ```
 
-#### Crontab 时间格式说明
+Crontab time format explanation
 
 ```
-# ┌───────────── 分钟 (0 - 59)
-# │ ┌───────────── 小时 (0 - 23)
-# │ │ ┌───────────── 日期 (1 - 31)
-# │ │ │ ┌───────────── 月份 (1 - 12)
-# │ │ │ │ ┌───────────── 星期 (0 - 7，0 和 7 都代表周日)
+# ┌───────────── Minute (0 - 59)
+# │ ┌───────────── Hour (0 - 23)
+# │ │ ┌───────────── Day of month (1 - 31)
+# │ │ │ ┌───────────── Month (1 - 12)
+# │ │ │ │ ┌───────────── Day of week (0 - 7, both 0 and 7 mean Sunday)
 # │ │ │ │ │
-# * * * * * 要执行的命令
+# * * * * * Command to execute
 
-# 常用示例：
-0 8 * * *     # 每天早上 8:00
-0 */2 * * *   # 每 2 小时
-30 9 * * 1-5  # 周一到周五 9:30
-0 0 1 * *     # 每月 1 号 0:00
+# Common examples:
+0 8 * * *     # Every day at 8:00 AM
+0 */2 * * *   # Every 2 hours
+30 9 * * 1-5  # Monday to Friday at 9:30 AM
+0 0 1 * *     # At 12:00 AM on the 1st of every month
 ```
 
-#### 前端通知
+Frontend notifications
 
-当 workflow 完成后，前端会自动弹出通知卡片：
-- 打开浏览器访问 http://localhost:3000
-- 右下角会显示通知卡片
-- 点击 "View Full Newsletter" 查看完整内容
-- 点击 "Dismiss" 关闭通知
+After the workflow completes, the frontend will display a notification card:
+- Open the browser and go to http://localhost:3000
+- A notification card will appear in the bottom-right corner
+- Click "View Full Newsletter" to see the full content
+- Click "Dismiss" to close the notification
 
-#### 手动触发
+Manual trigger
 
-也可以手动运行脚本立即生成：
+You can also run the script manually to generate immediately:
 
 ```bash
 ./trigger_workflow.sh
@@ -410,67 +410,67 @@ tail -f logs/trigger_workflow_$(date +%F).log
 
 ---
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 open_pulse/
-├── agents/                      # 智能体定义
-│   ├── newsletter_agent.py      # 对话智能体（与用户交互）
-│   ├── digest_agent.py          # 内容生成智能体（生成摘要）
+├── agents/                      # Agent definitions
+│   ├── newsletter_agent.py      # Conversational agent (user interaction)
+│   ├── digest_agent.py          # Content generation agent (summarization)
 │   └── __init__.py
 │
-├── readers/                     # 自定义 Reader 实现
-│   ├── jina_reader.py           # Jina Web Reader（网页解析）
-│   ├── registry.py              # Reader 注册系统
-│   ├── README.md                # Reader 开发文档
+├── readers/                     # Custom Reader implementations
+│   ├── jina_reader.py           # Jina Web Reader (web parsing)
+│   ├── registry.py              # Reader registration system
+│   ├── README.md                # Reader development docs
 │   └── __init__.py
 │
-├── config/                      # 配置文件
-│   ├── settings.py              # 全局配置
-│   ├── memory_config.py         # Memory 管理配置
+├── config/                      # Configuration files
+│   ├── settings.py              # Global settings
+│   ├── memory_config.py         # Memory management configuration
 │   └── __init__.py
 │
 │
-├── workflows/                   # 工作流
-│   ├── newsletter_generation.py # newsletter生成工作流
+├── workflows/                   # Workflows
+│   ├── newsletter_generation.py # Newsletter generation workflow
 │   └── __init__.py
 │
-├── agent-ui/                    # 前端应用（Next.js）
+├── agent-ui/                    # Frontend app (Next.js)
 │   ├── src/
-│   │   ├── api/                 # API 调用层
-│   │   ├── components/          # React 组件
-│   │   │   ├── chat/            # 聊天界面
+│   │   ├── api/                 # API layer
+│   │   ├── components/          # React components
+│   │   │   ├── chat/            # Chat interface
 │   │   │   │   ├── ChatInterface.tsx
 │   │   │   │   └── Sidebar/
-│   │   │   │       ├── Knowledge/  # 知识管理
+│   │   │   │       ├── Knowledge/  # Knowledge management
 │   │   │   │       │   ├── Knowledge.tsx
 │   │   │   │       │   ├── KnowledgeItem.tsx
 │   │   │   │       │   └── UploadFileDialog.tsx
 │   │   │   │       └── ...
-│   │   │   └── ui/              # UI 组件库
-│   │   ├── app/                 # Next.js 页面
-│   │   └── types/               # TypeScript 类型定义
+│   │   │   └── ui/              # UI component library
+│   │   ├── app/                 # Next.js pages
+│   │   └── types/               # TypeScript type definitions
 │   ├── package.json
 │   └── ...
 │
-├── agentos.py                   # AgentOS 主服务入口
-├── pyproject.toml               # Python 项目配置
-├── uv.lock                      # 依赖锁定文件
-├── .env.example                 # 环境变量模板
-└── README.md                    # 本文件
+├── agentos.py                   # AgentOS main service entrypoint
+├── pyproject.toml               # Python project configuration
+├── uv.lock                      # Dependency lockfile
+├── .env.example                 # Environment variable template
+└── README.md                    # This file
 ```
 
 ---
 
-## 🔧 开发指南
+## 🔧 Development Guide
 
-### 添加自定义 Reader
+### Add a custom Reader
 
-如果需要支持新的内容源（如特定网站、API 等），可以创建自定义 Reader：
+If you need to support new content sources (e.g., specific websites or APIs), you can create a custom Reader:
 
-#### 1. 创建 Reader 类
+#### 1. Create the Reader class
 
-在 `readers/` 目录下创建新文件，例如 `custom_reader.py`：
+Create a new file under readers/, e.g., custom_reader.py:
 
 ```python
 from agno.knowledge.reader.base import Reader
@@ -478,15 +478,15 @@ from agno.document import Document
 from typing import List, Optional
 
 class CustomReader(Reader):
-    """自定义 Reader 示例"""
+    """Custom Reader example"""
 
     def __init__(self, api_key: str = None, **kwargs):
         super().__init__(**kwargs)
         self.api_key = api_key
 
     def read(self, source: str, name: str = None) -> List[Document]:
-        """同步读取内容"""
-        # 实现你的读取逻辑
+        """Synchronous read"""
+        # Implement your reading logic
         content = self._fetch_content(source)
 
         return [Document(
@@ -496,23 +496,23 @@ class CustomReader(Reader):
         )]
 
     async def async_read(self, source: str, name: str = None) -> List[Document]:
-        """异步读取内容"""
+        """Asynchronous read"""
         import asyncio
         return await asyncio.to_thread(self.read, source, name)
 
     def _fetch_content(self, source: str) -> str:
-        """获取内容的具体实现"""
-        # 你的实现逻辑
+        """Concrete implementation to fetch content"""
+        # Your implementation
         pass
 ```
 
-#### 2. 注册 Reader
+#### 2. Register the Reader
 
-在 `readers/registry.py` 中添加注册函数：
+Add the registration function in readers/registry.py:
 
 ```python
 def _register_custom_reader(knowledge: Knowledge) -> str:
-    """注册 CustomReader"""
+    """Register CustomReader"""
     api_key = os.getenv("CUSTOM_API_KEY")
     if not api_key:
         return "skipped: CUSTOM_API_KEY not found"
@@ -524,10 +524,10 @@ def _register_custom_reader(knowledge: Knowledge) -> str:
             description="Description of what this reader does"
         )
 
-        # 添加到 knowledge.readers
+        # Add to knowledge.readers
         knowledge.readers["CustomReader"] = custom_reader
 
-        # 注册到 ReaderFactory
+        # Register to ReaderFactory
         def create_custom_reader(**kwargs):
             return CustomReader(api_key=api_key, **kwargs)
 
@@ -543,53 +543,53 @@ def _register_custom_reader(knowledge: Knowledge) -> str:
     except Exception as e:
         return f"failed: {str(e)}"
 
-# 在 register_all_readers 函数中调用
+# Call it inside register_all_readers
 def register_all_readers(knowledge: Knowledge) -> dict:
     status = {}
 
-    # 现有的 readers
+    # Existing readers
     jina_status = _register_jina_reader(knowledge)
     status['JinaWebReader'] = jina_status
 
-    # 添加你的 custom reader
+    # Add your custom reader
     custom_status = _register_custom_reader(knowledge)
     status['CustomReader'] = custom_status
 
     return status
 ```
 
-#### 3. 更新前端
+#### 3. Update the frontend
 
-在 `agent-ui/src/components/chat/Sidebar/Knowledge/UploadFileDialog.tsx` 中添加选项：
+Add the option in agent-ui/src/components/chat/Sidebar/Knowledge/UploadFileDialog.tsx:
 
 ```typescript
 <SelectItem value="CustomReader">Custom Reader</SelectItem>
 ```
 
-详细文档请参考：[`readers/README.md`](readers/README.md)
+For detailed docs, see: readers/README.md
 
-### 自定义 Memory 提取规则
+### Customize Memory extraction rules
 
-编辑 `config/memory_config.py` 来自定义 Memory 提取逻辑：
+Edit config/memory_config.py to customize memory extraction logic:
 
 ```python
-# 修改全局规则
+# Modify global rules
 MEMORY_EXTRACTION_RULES = """
-## 你的自定义规则
+## Your custom rules
 
 ### What to Store:
-- 你想存储的信息类型
+- Types of information you want to store
 
 ### What NOT to Store:
-- 你不想存储的信息类型
+- Types of information you don't want to store
 """
 
-# 或为特定 Agent 添加规则
+# Or add rules for a specific agent
 def create_newsletter_memory_manager(db: SqliteDb) -> MemoryManager:
     additional_instructions = """
-    ### 你的额外规则：
-    - 规则 1
-    - 规则 2
+    ### Your extra rules:
+    - Rule 1
+    - Rule 2
     """
 
     return create_memory_manager(
@@ -598,13 +598,13 @@ def create_newsletter_memory_manager(db: SqliteDb) -> MemoryManager:
     )
 ```
 
-### 添加新的 Agent
+### Add a new Agent
 
-1. 在 `agents/` 目录创建新文件
-2. 定义 Agent 的 instructions 和 tools
-3. 在 `agentos.py` 中注册 Agent
+1. Create a new file in the agents/ directory
+2. Define the agent's instructions and tools
+3. Register the agent in agentos.py
 
-示例：
+Example:
 
 ```python
 # agents/research_agent.py
@@ -624,99 +624,99 @@ def create_research_agent(db, knowledge):
 
 ---
 
-## 🤝 贡献指南
+## 🤝 Contributing
 
-欢迎贡献！请遵循以下步骤：
+Contributions are welcome! Please follow these steps:
 
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/amazing-feature`
-3. 提交更改：`git commit -m 'Add amazing feature'`
-4. 推送到分支：`git push origin feature/amazing-feature`
-5. 提交 Pull Request
+1. Fork this repository
+2. Create a feature branch: git checkout -b feature/amazing-feature
+3. Commit changes: git commit -m 'Add amazing feature'
+4. Push to the branch: git push origin feature/amazing-feature
+5. Open a Pull Request
 
-### 代码规范
+### Code style
 
-- **Python**：遵循 PEP 8，使用 `black` 格式化
-- **TypeScript**：遵循 ESLint 规则，使用 `prettier` 格式化
-- **提交信息**：使用清晰的提交信息，描述更改内容
+- Python: Follow PEP 8; use black for formatting
+- TypeScript: Follow ESLint rules; use prettier for formatting
+- Commit messages: Use clear messages describing the changes
 
 ---
 
-## 📝 常见问题
+## 📝 FAQ
 
-### Q: 为什么上传 URL 时选择 Jina Web Reader？
+### Q: Why choose Jina Web Reader when uploading URLs?
 
-A: Agno 内置的 `WebsiteReader` 和 `FirecrawlReader` 在解析某些网页时存在 bug。Jina Web Reader 是我们自定义的解决方案，使用 Jina AI 的免费 API，能够完美解析各种复杂网页。
+A: Agno's built-in WebsiteReader and FirecrawlReader have bugs parsing certain pages. Jina Web Reader is our custom solution that uses Jina AI's free API and can perfectly parse various complex web pages.
 
-### Q: 如何处理大量历史聊天记录？
+### Q: How to handle a large amount of chat history?
 
-A: 可以使用 `create_chat_history_memory_manager` 来批量处理聊天记录：
+A: Use create_chat_history_memory_manager to process chat logs in bulk:
 
 ```python
 from config.memory_config import create_chat_history_memory_manager
 
 memory_manager = create_chat_history_memory_manager(db)
-# 使用这个 memory_manager 处理聊天记录
+# Use this memory_manager to process chat logs
 ```
 
-### Q: 如何修改定时任务的时间？
+### Q: How to modify the schedule time?
 
-A: 编辑 crontab 配置：
+A: Edit your crontab configuration:
 
 ```bash
-# 编辑定时任务
+# Edit crontab
 crontab -e
 
-# 修改时间（例如改为每天下午 6 点）
+# Change time (e.g., to 6 PM daily)
 0 18 * * * /data/muskliu/mt/open_pulse/trigger_workflow.sh
 
-# 保存并退出（vim: 按 ESC，输入 :wq）
+# Save and exit (vim: press ESC, type :wq)
 ```
 
-常用时间配置：
-- `0 8 * * *` - 每天早上 8:00
-- `0 12,18 * * *` - 每天 12:00 和 18:00
-- `0 */6 * * *` - 每 6 小时一次
-- `0 9 * * 1-5` - 周一到周五 9:00
+Common schedules:
+- 0 8 * * * - Every day at 8:00 AM
+- 0 12,18 * * * - At 12:00 PM and 6:00 PM every day
+- 0 */6 * * * - Every 6 hours
+- 0 9 * * 1-5 - Weekdays at 9:00 AM
 
-### Q: 支持哪些 LLM？
+### Q: Which LLMs are supported?
 
-A: 支持所有 Agno 兼容的 LLM：
-- OpenAI（GPT-4o, GPT-4o-mini 等）
-- Anthropic（Claude 3.5 Sonnet 等）
-- OpenRouter（访问多种模型）
-- 本地模型（通过 Ollama 等）
+A: All LLMs compatible with Agno:
+- OpenAI (GPT-4o, GPT-4o-mini, etc.)
+- Anthropic (Claude 3.5 Sonnet, etc.)
+- OpenRouter (access to many models)
+- Local models (via Ollama, etc.)
 
-### Q: 如何备份数据？
+### Q: How to back up data?
 
-A: 备份以下文件/目录：
-- `open_pulse.db`（SQLite 数据库）
-- `my_knowledge.db`（Knowledge 内容数据库）
-- `tmp/lancedb/`（向量数据库）
-
----
-
-## 📄 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+A: Back up the following files/directories:
+- open_pulse.db (SQLite database)
+- my_knowledge.db (Knowledge content database)
+- tmp/lancedb/ (vector database)
 
 ---
 
-## 🙏 致谢
+## 📄 License
 
-- [Agno](https://github.com/agno-agi/agno) - 强大的 AI Agent 框架
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📧 联系方式
+## 🙏 Acknowledgments
 
-如有问题或建议，请：
-- 提交 [Issue](https://github.com/eliumusk/open_pulse/issues)
-- 加入我们的 [Discord 社区](https://discord.gg/your-invite)
+- [Agno](https://github.com/agno-agi/agno) - A powerful AI Agent framework
+
+---
+
+## 📧 Contact
+
+For issues or suggestions:
+- Open an [Issue](https://github.com/eliumusk/open_pulse/issues)
+- Join our [Discord community](https://discord.gg/your-invite)
 
 ---
 
 <div align="center">
-  <p>用 ❤️ 和 Agno 构建</p>
-  <p>⭐ 如果这个项目对你有帮助，请给我们一个 Star！</p>
+  <p>Built with ❤️ and Agno</p>
+  <p>⭐ If you find this project helpful, please give us a Star!</p>
 </div>
