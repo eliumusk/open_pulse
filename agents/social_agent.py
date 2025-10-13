@@ -6,6 +6,7 @@ from textwrap import dedent
 from agno.agent import Agent
 from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
+from agno.models.openrouter import OpenRouter
 from agno.tools.gmail import GmailTools
 from config.settings import DATABASE_FILE
 from config.memory_config import create_wechat_history_memory_manager
@@ -54,7 +55,7 @@ def create_social_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Social Agent",
-        model=OpenAIChat(id=MODEL_ID),
+        model=OpenAIChat(id=MODEL_ID) if os.getenv("OPENAI_API_KEY") else OpenRouter(id=MODEL_ID),
         description="A friendly AI assistant that helps users discover and learn about topics they're interested in through social media.",
         instructions=dedent("""
             You are the Social Agent for Open Pulse.
