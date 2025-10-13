@@ -7,6 +7,7 @@ from textwrap import dedent
 from agno.agent import Agent
 from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
+from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
 from config.memory_config import create_newsletter_memory_manager
@@ -71,7 +72,7 @@ def create_newsletter_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Newsletter Agent",
-        model=OpenAIChat(id=MODEL_ID),
+        model=OpenAIChat(id=MODEL_ID) if os.getenv("OPENAI_API_KEY") else OpenRouter(id=MODEL_ID),
         description="A friendly AI assistant that helps users discover and learn about topics they're interested in.",
         instructions=dedent("""
             You are the Newsletter Agent for Open Pulse, a personalized newsletter service.

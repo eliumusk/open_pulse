@@ -4,6 +4,8 @@ This file sets up the AgentOS with all agents and serves the API
 """
 import asyncio
 import json
+import os
+from pathlib import Path
 from typing import Optional
 from agno.db.sqlite import SqliteDb
 from agno.os import AgentOS
@@ -16,6 +18,7 @@ from sse_starlette.sse import EventSourceResponse
 from agents import create_newsletter_agent, create_digest_agent, create_research_agent, create_social_agent
 from workflows import create_newsletter_workflow, create_simple_newsletter_workflow
 from workflows.notification_manager import get_notification_manager
+from services.email_service import send_newsletter_email
 from config.settings import (
     DATABASE_FILE,
     AGENTOS_PORT,
@@ -113,15 +116,21 @@ def create_custom_endpoints(app: FastAPI, agent_os_instance: AgentOS):
                     cover_image_url = None
 
                     # Try to extract cover image
+                    cover_image_path = None
                     if hasattr(result, 'step_results') and result.step_results:
                         for step_result in result.step_results:
                             if hasattr(step_result, 'images') and step_result.images:
                                 img = step_result.images[0]
                                 if hasattr(img, 'url'):
                                     cover_image_url = img.url
+                                    # Convert URL to file path
+                                    # URL format: http://0.0.0.0:7777/static/images/filename.png
+                                    if '/static/images/' in cover_image_url:
+                                        filename = cover_image_url.split('/static/images/')[-1]
+                                        cover_image_path = str(STATIC_DIR / 'images' / filename)
                                     break
 
-                    # Send notification
+                    # Send frontend notification
                     notification_manager = get_notification_manager()
                     await notification_manager.notify_workflow_completion(
                         run_id=run_id,
@@ -131,6 +140,18 @@ def create_custom_endpoints(app: FastAPI, agent_os_instance: AgentOS):
                         workflow_id=workflow_id,
                         user_id=user_id,
                     )
+
+                    # Send email notification to user_id (which is the email address)
+                    print(f"📧 Sending email notification to {user_id}...")
+                    email_sent = send_newsletter_email(
+                        newsletter_content=content or "Newsletter generated successfully!",
+                        cover_image_path=cover_image_path,
+                        recipients=[user_id],  # Use user_id as recipient
+                    )
+                    if email_sent:
+                        print(f"✅ Email sent successfully to {user_id}")
+                    else:
+                        print(f"⚠️  Email sending skipped or failed")
 
                 except Exception as e:
                     print(f"❌ Workflow execution error: {e}")

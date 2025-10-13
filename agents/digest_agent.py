@@ -6,6 +6,7 @@ from textwrap import dedent
 from agno.agent import Agent
 from agno.db.sqlite import SqliteDb
 from agno.models.openai import OpenAIChat
+from agno.models.openrouter import OpenRouter
 from agno.tools.arxiv import ArxivTools
 from config.settings import DATABASE_FILE
 from config.memory_config import create_digest_memory_manager
@@ -72,7 +73,7 @@ def create_digest_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Digest Agent",
-        model=OpenAIChat(id=MODEL_ID),  # Use powerful model for content generation
+        model=OpenAIChat(id=MODEL_ID) if os.getenv("OPENAI_API_KEY") else OpenRouter(id=MODEL_ID),
         description="An AI agent that analyzes user interests and generates personalized newsletter content.",
         instructions=dedent("""
             You are the Digest Agent for Open Pulse, responsible for generating personalized newsletters.
@@ -148,7 +149,7 @@ def create_research_agent(db: SqliteDb = None) -> Agent:
     
     agent = Agent(
         name="Research Agent",
-        model=OpenAIChat(id=MODEL_ID),
+        model=OpenAIChat(id=MODEL_ID) if os.getenv("OPENAI_API_KEY") else OpenRouter(id=MODEL_ID),
         description="An AI agent specialized in finding and extracting relevant information.",
         instructions=dedent("""
             You are a Research Agent specialized in finding high-quality information.

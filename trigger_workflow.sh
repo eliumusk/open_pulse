@@ -13,7 +13,7 @@ INTERESTS="AI, quantum computing, space exploration"
 SESSION_ID="scheduled_$(date +%s)"
 
 # 日志目录和文件
-LOG_DIR="/data/muskliu/mt/open_pulse/logs"
+LOG_DIR="logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/trigger_workflow_$(date +%F).log"
 

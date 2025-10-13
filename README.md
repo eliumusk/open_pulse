@@ -400,13 +400,63 @@ After the workflow completes, the frontend will display a notification card:
 - Click "View Full Newsletter" to see the full content
 - Click "Dismiss" to close the notification
 
-Manual trigger
+#### 手动触发
 
-You can also run the script manually to generate immediately:
+也可以手动运行脚本立即生成：
 
 ```bash
 ./trigger_workflow.sh
 ```
+
+### 7. 邮件通知配置
+
+Newsletter 生成后会自动发送邮件给订阅者，邮件中包含封面图片和内容。
+
+#### 配置步骤
+
+**1. 编辑 `.env` 文件**
+
+```bash
+# SMTP 服务器设置
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+
+# 发件人邮箱（需要应用专用密码）
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_app_password
+```
+
+**注意**：收件人邮箱由 `trigger_workflow.sh` 中的 `USER_ID` 指定。
+
+**2. 配置收件人**
+
+编辑 `trigger_workflow.sh`：
+
+```bash
+USER_ID="your_email@example.com"  # 这个邮箱将收到 Newsletter
+```
+
+**3. 获取 Gmail 应用专用密码**
+
+1. 访问 https://myaccount.google.com/apppasswords
+2. 选择 "Mail" 和 "Other (Custom name)"
+3. 生成密码并复制到 `SENDER_PASSWORD`
+
+**4. 测试邮件发送**
+
+```bash
+python -c "from services.email_service import send_newsletter_email; \
+send_newsletter_email('Test Content', None, ['your_email@example.com'])"
+```
+
+**5. 邮件特性**
+
+- ✅ 精美的 HTML 邮件模板
+- ✅ 封面图片直接嵌入邮件正文（非附件）
+- ✅ 响应式设计，支持移动端
+- ✅ 自动发送给所有订阅者
+
+**详细配置说明**：参考 [docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)
 
 ---
 
